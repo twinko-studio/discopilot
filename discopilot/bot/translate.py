@@ -1,5 +1,5 @@
 from google.cloud import translate_v2 as translate
-from discopilot.google.google_translate import create_translate_client, translate_text, translate_to_chinese
+from discopilot.google.google_translsate import create_translate_client, translate_text, translate_to_chinese
 
 class TranslateBot:
     """
@@ -29,7 +29,7 @@ class TranslateBot:
         self.parent = f"projects/{google_project_id}"
         self.client = create_translate_client()
 
-    def translate_text(self, text, target_language_code, parent):
+    def translate_text(self, text, target_language_code):
         """
         Translate text into the specified target language using Google Translate.
 
@@ -43,6 +43,7 @@ class TranslateBot:
         Example:
             translated_text = translate_bot.translate_text("Hello, World!", "zh")
         """
+        print(self.parent)
         translate_text(client = self.client, text = text, target_language_code = target_language_code, parent = self.parent)
 
     def translate_to_chinese(text):

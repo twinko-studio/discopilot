@@ -1,5 +1,6 @@
 from google.cloud import translate
 from google.oauth2.service_account import Credentials
+import os
 
 
 def create_translate_client():
@@ -20,6 +21,8 @@ def create_translate_client():
     else:
         # Running elsewhere, use a JSON key file for credentials
         GOOGLE_APPLICATION_CREDENTIALS = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+        if not GOOGLE_APPLICATION_CREDENTIALS:
+            raise Exception("Please set the GOOGLE_APPLICATION_CREDENTIALS environment variable to the path of your JSON key file.")
         trans_credentials = Credentials.from_service_account_file(GOOGLE_APPLICATION_CREDENTIALS)
         client = translate.TranslationServiceClient(credentials = trans_credentials)
     return client
