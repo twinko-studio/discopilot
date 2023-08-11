@@ -28,6 +28,10 @@ class NewsBot:
     def __init__(self, twitter_creds, discord_token, google_project_id,
                  admin_id, emoji_id = 'newspaper2', internal_channel_id, channel_id_cn, channel_id_en):
         """Initialize the NewsBot with credentials for Twitter, Discord, and Google Translate."""
+        
+        # Twitter cooldown time
+        cooldown_time = None
+
         # Twitter credentials
         self.consumer_key = twitter_creds['consumer_key']
         self.consumer_secret = twitter_creds['consumer_secret']
@@ -163,7 +167,7 @@ class NewsBot:
             # Check if the error is related to rate limiting (status code 429)
             if e.api_codes == 429:
                 print("Too many requests, entering cooldown period.")
-                cooldown_time = time.time() + 5 * 60 * 60 # 5 hours from now
+                self.cooldown_time = time.time() + 5 * 60 * 60 # 5 hours from now
             else:
                 print(f"An error occurred: {e}")
         
