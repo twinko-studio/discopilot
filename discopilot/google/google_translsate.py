@@ -28,14 +28,14 @@ def create_translate_client():
     return client
 
 
-def translate_text(text: str, target_language_code: str, parent: str, client) -> translate.Translation:  
+def translate_text(text: str, target_language_code: str, project_id: str, client) -> translate.Translation:  
     """
     Translate text to target language
 
     Args:
         text (str): The text to translate
         target_language_code (str): The target language code
-        parent (str): The parent of the translation, in the format: projects/{project-id}
+        project_id: The project ID of google cloud
         client (translate.TranslationServiceClient): The translate client
 
     Returns:
@@ -43,8 +43,10 @@ def translate_text(text: str, target_language_code: str, parent: str, client) ->
 
     Examples:
     >>> client = create_translate_client()
-    >>> translate_text("Hello, World!", "zh", "projects/1234567890", client = client)
+    >>> translate_text("Hello, World!", "zh", "project/1234567890", client = client)
     """
+    assert project_id
+    parent = f"projects/{project_id}"
     response = client.translate_text(
         parent=parent,
         contents=[text],
@@ -52,13 +54,13 @@ def translate_text(text: str, target_language_code: str, parent: str, client) ->
     )
     return response.translations[0]
 
-def translate_to_chinese(text, parent, client):
+def translate_to_chinese(text, project_id, client):
     """
     Translate text to chinese
 
     Args:
         text (str): The text to translate
-        parent (str): The parent of the translation, in the format: projects/{project-id}
+        project_id (str): The project ID of google cloud
         client (translate.TranslationServiceClient): The translate client
 
     Returns:
@@ -66,7 +68,7 @@ def translate_to_chinese(text, parent, client):
 
     Examples:
     >>> client = create_translate_client()
-    >>> translate_to_chinese("Hello, World!", parent = "projeect/12345", client = client)
+    >>> translate_to_chinese("Hello, World!", porject_id = "12345", client = client)
     """
-    result = translate_text(text, "zh", parent = parent, client = client)
+    result = translate_text(text= text, target_language_code = "zh", project_id = project_id, client = client)
     return result.translated_text

@@ -1,7 +1,8 @@
 from google.cloud import translate_v2 as translate
 from discopilot.google.google_translsate import create_translate_client, translate_text, translate_to_chinese
 
-class TranslateBot:
+
+class TranslateBot:     
     """
     A bot that interacts with Google Translate.
 
@@ -17,16 +18,16 @@ class TranslateBot:
         print(translated_text)  # Output in Chinese
     """
 
-    def __init__(self, google_project_id):
+    def __init__(self, project_id):
         """
         Initialize the TranslateBot with the Google Project ID.
 
         Args:
-            google_project_id (str): The Google Cloud Project ID.
+            project_id (str): The Google Cloud Project ID.
         """
         # Google Translate parent resource
-        assert google_project_id
-        self.parent = f"projects/{google_project_id}"
+        assert project_id
+        self.project_id = project_id
         self.client = create_translate_client()
 
     def translate_text(self, text, target_language_code):
@@ -43,10 +44,12 @@ class TranslateBot:
         Example:
             translated_text = translate_bot.translate_text("Hello, World!", "zh")
         """
-        print(self.parent)
-        translate_text(client = self.client, text = text, target_language_code = target_language_code, parent = self.parent)
+        res = translate_text(client = self.client, text = text, 
+                           target_language_code = target_language_code, project_id = self.project_id)
 
-    def translate_to_chinese(text):
+        return res
+
+    def translate_to_chinese(self, text):
         """
         Translate text into Chinese.
 
@@ -58,6 +61,8 @@ class TranslateBot:
             translate.Translation: A Translation object containing the translated text.
 
         Example:
-            translated_text = translate_to_chinese("Hello, World!", translate_client)
+            translated_text = translate_bot.translate_to_chinese("Hello, World!")
         """
-        return translate_to_chinese(client = self.client, text = text, target_language_code = "zh", parent = self.parent)
+        res = translate_to_chinese(text = text,  project_id = self.project_id, client = self.client)
+
+        return res
