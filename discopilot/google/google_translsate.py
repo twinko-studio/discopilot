@@ -1,9 +1,10 @@
 from google.cloud import translate
 from google.oauth2.service_account import Credentials
 import os
+import configparser
 
 
-def create_translate_client():
+def create_translate_client(config_file = "config.ini"):
     """
     Create a translate client to translate text based on the environment. If running on Google App Engine, no need to provide credentials. 
     If running elsewhere, use a JSON key file for credentials.
@@ -14,13 +15,17 @@ def create_translate_client():
     Examples:
     >>> create_translate_client()
     """
-    # Check if running on Google App Engine
+    # Check if running on Google App Engine, set this environment variable in app.yaml or other environment configuration
     if os.environ.get("IS_APP_ENGINE"):
         # Running on App Engine, no need to provide credentials
         client = translate.TranslationServiceClient()
     else:
         # Running elsewhere, use a JSON key file for credentials
-        GOOGLE_APPLICATION_CREDENTIALS = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+        # use configure parser to get the path of the JSON key file
+        config = configparser.ConfigParser()
+        config.read(config_file)
+        GOOGLE_APPLICATION_CREDENTIALS = config['Google']['GOOGLE_APPLICATION_CREDENTIALS']
+        # GOOGLE_APPLICATION_CREDENTIALS = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
         if not GOOGLE_APPLICATION_CREDENTIALS:
             raise Exception("Please set the GOOGLE_APPLICATION_CREDENTIALS environment variable to the path of your JSON key file.")
         trans_credentials = Credentials.from_service_account_file(GOOGLE_APPLICATION_CREDENTIALS)

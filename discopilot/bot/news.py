@@ -3,6 +3,7 @@ import discord
 from discopiot.google.google_translate import create_translate_client, traslate_to_chinese
 from disocpiot.bot.translate import TranslateBot
 
+
 class NewsBot:
     """
     A bot that interacts with Twitter, Google Translate, and Discord.
@@ -25,8 +26,7 @@ class NewsBot:
         bot.run()
     """
 
-    def __init__(self, twitter_creds, discord_token, google_project_id,
-                 admin_id, emoji_id = 'newspaper2', internal_channel_id, channel_id_cn, channel_id_en):
+    def __init__(self, twitter_creds, discord_details, google_translate_details):
         """Initialize the NewsBot with credentials for Twitter, Discord, and Google Translate."""
         
         # Twitter cooldown time
@@ -38,36 +38,34 @@ class NewsBot:
         self.access_token = twitter_creds['access_token']
         self.access_token_secret = twitter_creds['access_token_secret']
 
-        # Discord token
-        self.discord_token = discord_token
+        # Discord 
+        self.discord_token = discord_details['discord_token']
+        self.internal_channel_id = discord_details['internal_channel_id']
+        self.channel_id_cn = discord_details['channel_id_cn']
+        self.channel_id_en = discord_details['channel_id_en']
+        self.admin_id = discord_details['admin_id']
+        self.emoji_id = discord_details['emoji_id']
 
-        # Discord channel ID
-        self.internal_channel_id = internal_channel_id
-        self.channel_id_cn = channel_id_cn
-        self.channel_id_en = channel_id_en
-
-        # Discord admin ID
-        self.admin_id = admin_id
-
-        # Discord emoji ID
-        self.emoji_id = emoji_id
-
-        
+        # Google translate
+        self.google_project_id = google_translate_details['google_project_id']
 
         # Initialize Twitter client
         self.twitter_client = self.initialize_twitter_client()
 
         # Initialize Google Translate client
-        # self.translate_client = self.initialize_google_translate_client()
-        self.translate_bot = TranslateBot(google_project_id)
+        self.translate_bot = TranslateBot(self.google_project_id)
 
         # Initialize Discord client
         self.intents = discord.Intents.default()  
         self.intents.message_content = True
         self.intents.reactions = True
-
         self.discord_client = self.initialize_discord_client()
 
+        # Set up Discord bot action status
+        self.on_message_check = True
+        self.on_reaction_add_check = True
+
+        # Set up Discord events
         self.setup_discord_events()
     
     def initialize_discord_client(self):
@@ -96,6 +94,9 @@ class NewsBot:
         @self.discord_client.event
         async def on_message(message):
         global cooldown_time
+        # Check switch
+        if not self.on_message_check:
+            return
         # Check if the message is from the bot itself
         if not message.author.bot:
             return
@@ -132,23 +133,26 @@ class NewsBot:
 
         @self.discord_client.event
         async def on_raw_reaction_add(payload):
-        print("on_raw_reaction_add")
-        if str(payload.user_id) == self.admin_id and str(payload.emoji) == self.emoji_id:
-
-            if(str(payload.channel_id) != self.channel_id_en):
+            if not self.on_reaction_add_check:
                 return
-            
-            # Get the channel and message IDs from the payload
-            channel = self.discord_client.get_channel(payload.channel_id)
-            message = await channel.fetch_message(payload.message_id)
-            if message.embeds:
-                for embed in message.embeds:
-                    tweet_content = f"{embed.title} {embed.url}"
-                    self.post_to_twitter(tweet_content)
+                
+            print("on_raw_reaction_add")
+            if str(payload.user_id) == self.admin_id and str(payload.emoji) == self.emoji_id:
+
+                if(str(payload.channel_id) != self.channel_id_en):
+                    return
+                
+                # Get the channel and message IDs from the payload
+                channel = self.discord_client.get_channel(payload.channel_id)
+                message = await channel.fetch_message(payload.message_id)
+                if message.embeds:
+                    for embed in message.embeds:
+                        tweet_content = f"{embed.title} {embed.url}"
+                        self.post_to_twitter(tweet_content)
+                else:
+                    return
             else:
                 return
-        else:
-            return
 
     def post_to_twitter(self, tweet_text):
         """
@@ -171,35 +175,6 @@ class NewsBot:
             else:
                 print(f"An error occurred: {e}")
         
-
-    def translate_text(self, text, target_language_code):
-        """
-        Translate text into the specified target language using Google Translate.
-
-        Args:
-            text (str): The text to be translated.
-            target_language_code (str): The target language code (e.g., 'en', 'es').
-
-        Returns:
-            translate.Translation: A Translation object containing the translated text.
-
-        Example:
-            translated_text = bot.translate_text("Hello, World!", "es")
-        """
-        self.translate_client.translate(text, target_language_code)
-
-    def write_message_back(self, channel, message):
-        """
-        Write a message back to a specific Discord channel.
-
-        Args:
-            channel (discord.Channel): The channel to send the message to.
-            message (str): The message content.
-
-        Example:
-            bot.write_message_back(some_channel, "Hello, Channel!")
-        """
-        # Your logic to write a message back to a Discord channel
 
     def run(self):
         """Start the Discord bot."""

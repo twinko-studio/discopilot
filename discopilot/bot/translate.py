@@ -18,7 +18,7 @@ class TranslateBot:
         print(translated_text)  # Output in Chinese
     """
 
-    def __init__(self, project_id):
+    def __init__(self, project_id, config_file):
         """
         Initialize the TranslateBot with the Google Project ID.
 
@@ -27,8 +27,9 @@ class TranslateBot:
         """
         # Google Translate parent resource
         assert project_id
+        assert config_file
         self.project_id = project_id
-        self.client = create_translate_client()
+        self.client = create_translate_client(config_file = config_file)
 
     def translate_text(self, text, target_language_code):
         """
