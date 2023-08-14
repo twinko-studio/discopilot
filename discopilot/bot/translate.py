@@ -29,7 +29,7 @@ class TranslateBot:
         assert project_id
         assert config_file
         self.project_id = project_id
-        self.client = create_translate_client(config_file = config_file)
+        self.client = create_translate_client(config_file = config_file )
 
     def translate_text(self, text, target_language_code):
         """
