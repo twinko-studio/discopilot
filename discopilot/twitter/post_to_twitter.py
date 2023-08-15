@@ -24,7 +24,8 @@ def post_to_twitter(tweet, consumer_key, consumer_secret, access_token, access_t
         consumer_key=consumer_key,
         consumer_secret = consumer_secret,
         access_token = access_token,
-        access_token_secret = access_token_secret
+        access_token_secret = access_token_secret,
+        sleep_on_rate_limit=True
     )
     print("tweet:" + tweet)
     twitter_client.create_tweet(text = tweet)

@@ -1,5 +1,5 @@
 from google.cloud import translate_v2 as translate
-from discopilot.google.google_translsate import create_translate_client, translate_text, translate_to_chinese
+from discopilot.google.google_translate import create_translate_client, translate_text, translate_to_chinese
 
 
 class TranslateBot:     
@@ -11,14 +11,14 @@ class TranslateBot:
 
     Example:
         google_project_id = 'projects/my_project/locations/my_location'
-        translate_bot = TranslateBot(google_project_id)
+        translate_bot = TranslateBot(google_project_id, config_file = 'path/to/config.ini')
         translated_text = translate_bot.translate_text("Hello, World!", "es")
         print(translated_text)  # Output in Spanish
         translated_text = translate_bot.translate_to_chinese("Hello, World!")
         print(translated_text)  # Output in Chinese
     """
 
-    def __init__(self, project_id, config_file):
+    def __init__(self, project_id, credentials_file):
         """
         Initialize the TranslateBot with the Google Project ID.
 
@@ -27,9 +27,8 @@ class TranslateBot:
         """
         # Google Translate parent resource
         assert project_id
-        assert config_file
         self.project_id = project_id
-        self.client = create_translate_client(config_file = config_file )
+        self.client = create_translate_client(credentials_file)
 
     def translate_text(self, text, target_language_code):
         """

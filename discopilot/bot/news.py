@@ -1,7 +1,7 @@
 import tweepy
 import discord
-from discopiot.google.google_translate import create_translate_client, traslate_to_chinese
-from disocpiot.bot.translate import TranslateBot
+from discopilot.google.google_translate import create_translate_client, translate_to_chinese
+from discopilot.bot.translate import TranslateBot
 
 
 class NewsBot:
@@ -39,21 +39,23 @@ class NewsBot:
         self.access_token_secret = twitter_creds['access_token_secret']
 
         # Discord 
-        self.discord_token = discord_details['discord_token']
-        self.internal_channel_id = discord_details['internal_channel_id']
+        self.discord_token = discord_details['token']
+        self.internal_news_cid = discord_details['internal_news_cid']
         self.channel_id_cn = discord_details['channel_id_cn']
         self.channel_id_en = discord_details['channel_id_en']
         self.admin_id = discord_details['admin_id']
         self.emoji_id = discord_details['emoji_id']
 
         # Google translate
-        self.google_project_id = google_translate_details['google_project_id']
+        #self.google_project_id = google_translate_details['project_id']
+
 
         # Initialize Twitter client
         self.twitter_client = self.initialize_twitter_client()
 
         # Initialize Google Translate client
-        self.translate_bot = TranslateBot(self.google_project_id)
+        self.translate_bot = TranslateBot(project_id = google_translate_details['project_id'], 
+                                          credentials_file = google_translate_details['credentials_file'])
 
         # Initialize Discord client
         self.intents = discord.Intents.default()  
@@ -73,13 +75,14 @@ class NewsBot:
         discord_client = discord.Client(intents=self.intents)
         return discord_client
 
-    def initialize_twitter_client(self):
+    def initialize_twitter_client(self, wait_on_rate_limit  = True):
         """Initialize the Twitter client using Tweepy."""
         twitter_client = tweepy.Client(
             consumer_key=self.consumer_key,
             consumer_secret = self.consumer_secret,
             access_token = self.access_token,
-            access_token_secret = self.access_token_secret
+            access_token_secret = self.access_token_secret,
+            wait_on_rate_limit  = wait_on_rate_limit 
         )
         return twitter_client
 
@@ -93,43 +96,45 @@ class NewsBot:
         # ... (same as before)
         @self.discord_client.event
         async def on_message(message):
-        global cooldown_time
-        # Check switch
-        if not self.on_message_check:
-            return
-        # Check if the message is from the bot itself
-        if not message.author.bot:
-            return
+            global cooldown_time
+            # Check switch
+            if not self.on_message_check:
+                return
+            # Check if the message is from the bot itself
+            if not message.author.bot:
+                return
 
-        # Check for the specific channel you want to listen to
-        if str(message.channel.id) != self.internal_channel_id:
+            # Check for the specific channel you want to listen to
+            if str(message.channel.id) != self.internal_news_cid:
+                return
+            
+            # Check for cooldown period
+            if cooldown_time and time.time() < cooldown_time:
+                print("In cooldown period, exiting.")
+                return
+            
+            # Remove afer testing!!
             return
+            # Check if the message contains any embeds
+            if message.embeds:
+                for embed in message.embeds:  # Loop through all embeds
+
+                    # breakdown from list to single item to public news room
+                    en_channel = await discord_client.fetch_channel(self.channel_id_en)
+                    await en_channel.send(embed = embed)
+                    
+                    # Translate the embed title and description to Chinese
+                    embed_cn_title = self.translate_bot.translate_to_chinese(str(embed.title))
+                    embed_cn_description = self.translate.translate_to_chinese(str(embed.description)) 
         
-        # Check for cooldown period
-        if cooldown_time and time.time() < cooldown_time:
-            print("In cooldown period, exiting.")
-            return
-
-        # Check if the message contains any embeds
-        if message.embeds:
-            for embed in message.embeds:  # Loop through all embeds
-
-                # breakdown from list to single item to public news room
-                en_channel = await discord_client.fetch_channel(self.channel_id_en)
-                await en_channel.send(embed = embed)
-                
-                # Translate the embed title and description to Chinese
-                embed_cn_title = self.translate_bot.translate_to_chinese(str(embed.title))
-                embed_cn_description = self.translate.translate_to_chinese(str(embed.description)) 
-       
-                # Generate Chinese embed (creating a copy to avoid modifying the original)
-                embed_cn = embed.copy()
-                embed_cn.title = embed_cn_title
-                embed_cn.description = embed_cn_description     
-                cn_channel = await discord_client.fetch_channel(self.channel_id_cn)
-                await cn_channel.send(embed = embed_cn)
-        else:
-            return
+                    # Generate Chinese embed (creating a copy to avoid modifying the original)
+                    embed_cn = embed.copy()
+                    embed_cn.title = embed_cn_title
+                    embed_cn.description = embed_cn_description     
+                    cn_channel = await discord_client.fetch_channel(self.channel_id_cn)
+                    await cn_channel.send(embed = embed_cn)
+            else:
+                return
 
         @self.discord_client.event
         async def on_raw_reaction_add(payload):
@@ -137,8 +142,15 @@ class NewsBot:
                 return
                 
             print("on_raw_reaction_add")
-            if str(payload.user_id) == self.admin_id and str(payload.emoji) == self.emoji_id:
+            # Count the number of thumbs-up reactions
+            #if str(payload.emoji) == '👍'
+            #thumb_up_count = sum(reaction.count for reaction in message.reactions if str(reaction.emoji) == '👍')
+            #
 
+            
+            if str(payload.user_id) == self.admin_id and str(payload.emoji) == self.emoji_id:
+                print(str(payload.emoji) + "matched")
+                return
                 if(str(payload.channel_id) != self.channel_id_en):
                     return
                 
