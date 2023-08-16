@@ -1,12 +1,19 @@
 import configparser
 from discopilot.bot.news import NewsBot
 from discopilot.bot.translate import TranslateBot
-
+from discopilot.configuration_loader import ConfigurationLoader
+import os
 
 def main(config_file):
+
+    if config_file is None:
+        # try to parse from env
+        config_file = os.environ.get('DISCOPILOT_CONFIG')
+        if config_file is None:
+            raise ValueError("config_file cannot be None: \\ Usage: python mypackage config.ini or set up DISCOPILOT_CONFIG environment varaible")
     # Read the configuration file
-    config = configparser.ConfigParser()
-    config.read(config_file)
+    # use loader
+    config = ConfigurationLoader.load_config(config_file)
 
     # Extract Twitter credentials
     twitter_creds = {
@@ -29,7 +36,8 @@ def main(config_file):
         'channel_id_cn': config['Discord']['CN_CID'],
         'channel_id_en': config['Discord']['EN_CID'],
         'admin_id': config['Discord']['ADMIN_ID'],
-        'emoji_id': config['Discord']['SPECIFIC_REACTION']
+        'emoji_id': config['Discord']['SPECIFIC_REACTION'],
+        'command_prefix': config['Discord']['COMMAND_PREFIX']
     }
 
     # Initialize bots
@@ -42,9 +50,5 @@ def main(config_file):
 
 if __name__ == '__main__':
     import sys
-    if len(sys.argv) != 2:
-        print("Usage: python mypackage config.ini")
-        sys.exit(1)
-
-    config_file = sys.argv[1]
+    config_file = sys.argv[1] if len(sys.argv) == 2 else None
     main(config_file)

@@ -1,5 +1,3 @@
 .vscode
+__pycache__/
 discopilot.egg-info/
-discopilot/__pycache__
-discopilot/bot/__pycache__
-discopilot/google/__pycache__
