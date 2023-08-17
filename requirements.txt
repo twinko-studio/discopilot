@@ -3,5 +3,5 @@ tweepy==4.14.0
 google-cloud-translate==3.0.2
 discord.py
 configparser
-jason
-yaml
+json
+PyYAML
