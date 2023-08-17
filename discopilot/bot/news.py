@@ -2,7 +2,7 @@ import tweepy
 import discord
 import time
 from discord.ext import commands
-from discopilot.google.google_translate import create_translate_client, translate_to_chinese
+
 from discopilot.bot.translate import TranslateBot
 from datetime import datetime, timedelta
 
