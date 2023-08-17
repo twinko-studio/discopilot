@@ -1,11 +1,12 @@
-import tweepy
-import discord
 import time
+from datetime import datetime, timedelta
+
+import discord
+import tweepy
 from discord.ext import commands
 
 from discopilot.bot.translate import TranslateBot
-from datetime import datetime, timedelta
-
+from discopilot.google.translate import create_translate_client
 
 
 class NewsBot:
@@ -31,7 +32,8 @@ class NewsBot:
     """
 
     def __init__(self, twitter_creds, discord_details, google_translate_details):
-        """Initialize the NewsBot with credentials for Twitter, Discord, and Google Translate."""
+        """Initialize the NewsBot with credentials for Twitter, Discord, and Google 
+        Translate."""
         
         # Twitter cooldown time
         self.cooldown_time = None
@@ -75,7 +77,8 @@ class NewsBot:
     def initialize_discord_bot(self):
         """Initialize the Discord bot."""
         print("command prefix is" + self.command_prefix)
-        discord_bot = commands.Bot(command_prefix=self.command_prefix, intents = self.intents)
+        discord_bot = commands.Bot(command_prefix=self.command_prefix, 
+                                   intents = self.intents)
         return discord_bot
 
     def initialize_twitter_client(self, wait_on_rate_limit  = True):
