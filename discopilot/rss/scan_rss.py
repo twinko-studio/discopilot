@@ -1,3 +1,7 @@
+import base64
+import feedparser
+from datetime import datetime, timedelta
+
 def scan_rss(data, context):
     global last_seen_timestamp
     

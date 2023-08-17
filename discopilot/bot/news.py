@@ -1,9 +1,11 @@
 import tweepy
 import discord
+import time
 from discord.ext import commands
 from discopilot.google.google_translate import create_translate_client, translate_to_chinese
 from discopilot.bot.translate import TranslateBot
 from datetime import datetime, timedelta
+
 
 
 class NewsBot:
@@ -121,7 +123,7 @@ class NewsBot:
                 for embed in message.embeds:  # Loop through all embeds
 
                     # breakdown from list to single item to public news room
-                    en_channel = await discord_bot.fetch_channel(self.channel_id_en)
+                    en_channel = await self.discord_bot.fetch_channel(self.channel_id_en)
                     await en_channel.send(embed = embed)
                     
                     # Translate the embed title and description to Chinese
@@ -132,7 +134,7 @@ class NewsBot:
                     embed_cn = embed.copy()
                     embed_cn.title = embed_cn_title
                     embed_cn.description = embed_cn_description     
-                    cn_channel = await discord_bot.fetch_channel(self.channel_id_cn)
+                    cn_channel = await self.discord_bot.fetch_channel(self.channel_id_cn)
                     await cn_channel.send(embed = embed_cn)
             else:
                 return
@@ -185,7 +187,7 @@ class NewsBot:
             bot.post_to_twitter("Hello, Twitter!")
         """
         try:
-            print("tweet:" + tweet_content)
+            print("tweet:" + tweet_text)
             self.twitter_client.create_tweet(text = tweet_text)
         except tweepy.TweepyException as e:
             # Check if the error is related to rate limiting (status code 429)
