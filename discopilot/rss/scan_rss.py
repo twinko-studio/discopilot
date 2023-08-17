@@ -1,6 +1,7 @@
 import base64
 import feedparser
 from datetime import datetime, timedelta
+from discopilot.twitter.post_to_twitter import post_to_twitter
 
 def scan_rss(data, context):
     global last_seen_timestamp
