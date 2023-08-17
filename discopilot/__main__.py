@@ -1,6 +1,4 @@
-import configparser
 from discopilot.bot.news import NewsBot
-from discopilot.bot.translate import TranslateBot
 from discopilot.configuration_loader import ConfigurationLoader
 import os
 
@@ -10,7 +8,7 @@ def main(config_file):
         # try to parse from env
         config_file = os.environ.get('DISCOPILOT_CONFIG')
         if config_file is None:
-            raise ValueError("config_file cannot be None: \\ Usage: python mypackage config.ini or set up DISCOPILOT_CONFIG environment varaible")
+            raise ValueError("config_file cannot be None")
     # Read the configuration file
     # use loader
     config = ConfigurationLoader.load_config(config_file)
