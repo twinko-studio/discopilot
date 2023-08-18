@@ -2,11 +2,12 @@ import time
 from datetime import datetime, timedelta
 
 import discord
+from discord import app_commands
 import tweepy
-from discord.ext import commands
 
 from discopilot.bot.translate import TranslateBot
-from discopilot.google.translate import create_translate_client
+from discopilot.google.google_translate import create_translate_client
+
 
 
 class NewsBot:
@@ -16,7 +17,7 @@ class NewsBot:
     Attributes:
         twitter_client (tweepy.API): A Tweepy client for interacting with Twitter.
         translate_client (translate.Client): A Google Cloud Translate client.
-        discord_bot (discord.Client): A Discord bot.
+        discord_client (discord.Client): A Discord bot.
 
     Example:
         twitter_creds = {
@@ -46,6 +47,7 @@ class NewsBot:
 
         # Discord 
         self.discord_token = discord_details['token']
+        self.guild_id = discord_details['guild_id']
         self.internal_news_cid = discord_details['internal_news_cid']
         self.channel_id_cn = discord_details['channel_id_cn']
         self.channel_id_en = discord_details['channel_id_en']
@@ -64,22 +66,84 @@ class NewsBot:
         self.intents = discord.Intents.default()  
         self.intents.message_content = True
         self.intents.reactions = True
-        self.discord_bot = self.initialize_discord_bot()
-        # self.discord_bot.add_cog(self)
+        self.discord_client = self.initialize_discord_client()
+        self.tree = app_commands.CommandTree(self.discord_client)
 
-        # Set up Discord bot action status
-        self.on_message_check = True
-        self.on_reaction_add_check = True
-
-        # Set up Discord events
+        # setup discord event
         self.setup_discord_events()
+
+        # setup discord slash commands
+        self.setup_discord_slash_commands()
     
-    def initialize_discord_bot(self):
+    def initialize_discord_client(self):
         """Initialize the Discord bot."""
-        print("command prefix is" + self.command_prefix)
-        discord_bot = commands.Bot(command_prefix=self.command_prefix, 
-                                   intents = self.intents)
-        return discord_bot
+        discord_client = discord.Client(intents = self.intents)
+        return discord_client
+        
+
+    def setup_discord_events(self):
+        """Set up Discord events for handling messages and reactions."""
+
+        @self.discord_client.event
+        async def on_message(message):
+            print("on_message")
+            # Check if the message is from the bot itself
+            if not message.author.bot:
+                return
+
+            print("message.channel.id: " + str(message.channel.id)) 
+            # Check for the specific channel you want to listen to
+            if str(message.channel.id) != self.internal_news_cid:
+                return
+            print("message.embeds: " + str(message.embeds))
+            # Check if the message contains any embeds
+            if message.embeds:
+                for embed in message.embeds:  # Loop through all embeds
+
+                    # breakdown from list to single item to public news room
+                    en_channel = await self.discord_client.fetch_channel(self.channel_id_en)
+                    await en_channel.send(embed = embed)
+                    
+                    # Translate the embed title and description to Chinese
+                    embed_cn_title = self.translate_bot.translate_to_chinese(str(embed.title))
+                    embed_cn_description = self.translate.translate_to_chinese(str(embed.description)) 
+        
+                    # Generate Chinese embed (creating a copy to avoid modifying the original)
+                    embed_cn = embed.copy()
+                    embed_cn.title = embed_cn_title
+                    embed_cn.description = embed_cn_description     
+                    cn_channel = await self.discord_client.fetch_channel(self.channel_id_cn)
+                    await cn_channel.send(embed = embed_cn)
+            else:
+                return
+
+        @self.discord_client.event
+        async def on_raw_reaction_add(payload):
+            print("on_raw_reaction_add")
+            
+            if str(payload.user_id) == self.admin_id and str(payload.emoji) == self.emoji_id:
+                print(str(payload.emoji) + "matched")
+                return
+                if(str(payload.channel_id) != self.channel_id_en):
+                    return
+                
+                # Get the channel and message IDs from the payload
+                channel = self.discord_client.get_channel(payload.channel_id)
+                message = await channel.fetch_message(payload.message_id)
+                if message.embeds:
+                    for embed in message.embeds:
+                        tweet_content = f"{embed.title} {embed.url}"
+                        self.post_to_twitter(tweet_content)
+                else:
+                    return
+            else:
+                return 
+
+    def setup_discord_slash_commands(self):
+        @self.tree.command(name = "hello", description = "test hello", guild = discord.Object(id=self.guild_id)) 
+        async def hello(interaction):
+            await interaction.response.send_message("Hello!")
+
 
     def initialize_twitter_client(self, wait_on_rate_limit  = True):
         """Initialize the Twitter client using Tweepy."""
@@ -96,134 +160,19 @@ class NewsBot:
         """Initialize the Google Translate client."""
         translate_client = create_translate_client()
         return translate_client
-    
-    def setup_discord_events(self):
-        """Set up Discord events for handling messages and reactions."""
-        # ... (same as before)
-        @self.discord_bot.event
-        async def on_message(message):
-            # global cooldown_time
-            # Check switch
-            if not self.on_message_check:
-                return
-            # Check if the message is from the bot itself
-            if not message.author.bot:
-                return
-
-            # Check for the specific channel you want to listen to
-            if str(message.channel.id) != self.internal_news_cid:
-                return
-            
-            # Check for cooldown period
-            if self.cooldown_time and time.time() < self.cooldown_time:
-                print("In cooldown period, exiting.")
-                return
-            
-            # Remove afer testing!!
-            return
-            # Check if the message contains any embeds
-            if message.embeds:
-                for embed in message.embeds:  # Loop through all embeds
-
-                    # breakdown from list to single item to public news room
-                    en_channel = await self.discord_bot.fetch_channel(self.channel_id_en)
-                    await en_channel.send(embed = embed)
-                    
-                    # Translate the embed title and description to Chinese
-                    embed_cn_title = self.translate_bot.translate_to_chinese(str(embed.title))
-                    embed_cn_description = self.translate.translate_to_chinese(str(embed.description)) 
-        
-                    # Generate Chinese embed (creating a copy to avoid modifying the original)
-                    embed_cn = embed.copy()
-                    embed_cn.title = embed_cn_title
-                    embed_cn.description = embed_cn_description     
-                    cn_channel = await self.discord_bot.fetch_channel(self.channel_id_cn)
-                    await cn_channel.send(embed = embed_cn)
-            else:
-                return
-
-        @self.discord_bot.event
-        async def on_raw_reaction_add(payload):
-            if not self.on_reaction_add_check:
-                return
-                
-            print("on_raw_reaction_add")
-            # Count the number of thumbs-up reactions
-            #if str(payload.emoji) == '👍'
-            #thumb_up_count = sum(reaction.count for reaction in message.reactions if str(reaction.emoji) == '👍')
-            #
-
-            
-            if str(payload.user_id) == self.admin_id and str(payload.emoji) == self.emoji_id:
-                print(str(payload.emoji) + "matched")
-                return
-                if(str(payload.channel_id) != self.channel_id_en):
-                    return
-                
-                # Get the channel and message IDs from the payload
-                channel = self.discord_bot.get_channel(payload.channel_id)
-                message = await channel.fetch_message(payload.message_id)
-                if message.embeds:
-                    for embed in message.embeds:
-                        tweet_content = f"{embed.title} {embed.url}"
-                        self.post_to_twitter(tweet_content)
-                else:
-                    return
-            else:
-                return
-        
-
-        @commands.command()
-        async def foo(self, ctx, arg):
-            print("tiggered foo")
-            await ctx.send(arg) 
-
 
     def post_to_twitter(self, tweet_text):
         """
         Post a tweet to Twitter.
-
-        Args:
-            tweet_text (str): The text of the tweet to post.
-
-        Example:
-            bot.post_to_twitter("Hello, Twitter!")
         """
-        try:
-            print("tweet:" + tweet_text)
-            self.twitter_client.create_tweet(text = tweet_text)
-        except tweepy.TweepyException as e:
-            # Check if the error is related to rate limiting (status code 429)
-            if e.api_codes == 429:
-                print("Too many requests, entering cooldown period.")
-                self.cooldown_time = time.time() + 5 * 60 * 60 # 5 hours from now
-            else:
-                print(f"An error occurred: {e}")
-        
+        self.twitter_client.create_tweet(text = tweet_text) 
 
     async def fetch_messages(self, channel_id, start_time=None, end_time=None, hours=None):
         """
         Fetches messages from a Discord channel based on the given time range.
-        
-        Parameters:
-        - channel: The Discord channel object.
-        - start_time: The starting datetime for the time range.
-        - end_time: The ending datetime for the time range.
-        - hours: If specified, fetch messages from the last 'hours' hours.
-        
-        Returns:
-        - A list of Discord messages within the specified time range.
-
-        Example:
-            # Fetch messages from the last 24 hours
-            messages = await fetch_messages(channel, hours=24)
-            # Fetch messages from 2023-07-20 to 2023-07-21
-            start_time = datetime(2023, 6, 20, 0, 0)  # June 20, 2023, 00:00
-            end_time = datetime(2023, 7, 21, 0, 0)    # July 21, 2023, 00:00
-            messages = await fetch_messages(channel, start_time=start_time, end_time=end_time)
         """
         
-        channel = await self.discord_bot.fetch_channel(channel_id)
+        channel = await self.discord_client.fetch_channel(channel_id)
 
         if channel is None:
             print("Channel not found!")
@@ -248,4 +197,4 @@ class NewsBot:
 
     def run(self):
         """Start the Discord bot."""
-        self.discord_bot.run(self.discord_token)
+        self.discord_client.run(self.discord_token)

@@ -1,14 +1,9 @@
 from discopilot.bot.news import NewsBot
 from discopilot.configuration_loader import ConfigurationLoader
-import os
 
 def main(config_file):
 
-    if config_file is None:
-        # try to parse from env
-        config_file = os.environ.get('DISCOPILOT_CONFIG')
-        if config_file is None:
-            raise ValueError("config_file cannot be None")
+
     # Read the configuration file
     # use loader
     config = ConfigurationLoader.load_config(config_file)
@@ -30,13 +25,18 @@ def main(config_file):
     # Extract Discord details
     discord_details = {
         'token': config['Discord']['DISCORD_BOT_TOKEN'],
-        'internal_news_cid': config['Discord']['INTERNAL_NEWS_CID'],
-        'channel_id_cn': config['Discord']['CN_CID'],
-        'channel_id_en': config['Discord']['EN_CID'],
+        'guild_id': config['Discord']['TS_GUILD_ID'],
         'admin_id': config['Discord']['ADMIN_ID'],
         'emoji_id': config['Discord']['SPECIFIC_REACTION'],
-        'command_prefix': config['Discord']['COMMAND_PREFIX']
+        'command_prefix': config['Discord']['COMMAND_PREFIX'],
+        'channel_ids' : config['Discord_CID'],
+        'channel_mapping': config['Channel_Mapping'],
+        'chinese_mapping': config['Chinese_Mapping']
     }
+
+    
+      
+
 
     # Initialize bots
     news_bot = NewsBot(twitter_creds = twitter_creds, 
