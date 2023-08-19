@@ -7,7 +7,7 @@ def test_load_ini_configuration():
     
     # Load configuration
     config = ConfigurationLoader.load_config(config_file_path)
-    
+
     # Assertions to check the correctness of the loaded configuration
 
     # Twitter section
@@ -29,7 +29,6 @@ def test_load_ini_configuration():
     assert 'SPECIFIC_REACTION' in config['Discord']
     assert 'COMMAND_PREFIX' in config['Discord']
 
-    # ... You can add more assertions if you add more sections or keys to the INI file in the future.
 
 def test_load_json_configuration():
     # Define path to the fake JSON configuration file

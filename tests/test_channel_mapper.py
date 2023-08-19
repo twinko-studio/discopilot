@@ -26,4 +26,5 @@ def test_channel_mapper():
     assert mapper.get_chinese_channel_id(895094) == "784524"
     assert mapper.get_id_from_name("RAW_AI_CID") == "895094"
     assert mapper.get_name_from_id(895094) == "RAW_AI_CID"
+    assert mapper.get_raw_cid() == ['RAW_AI_CID', 'RAW_DT_CID', 'RAW_WEB3_CID', 'RAW_ROBOTICS_CID', 'RAW_AIDD_CID', 'RAW_RESPONSIBLE_AI_CID']
 

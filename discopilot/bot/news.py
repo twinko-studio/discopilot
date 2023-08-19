@@ -162,15 +162,11 @@ class NewsBot:
         return translate_client
 
     def post_to_twitter(self, tweet_text):
-        """
-        Post a tweet to Twitter.
-        """
+        """Post a tweet to Twitter."""
         self.twitter_client.create_tweet(text = tweet_text) 
 
     async def fetch_messages(self, channel_id, start_time=None, end_time=None, hours=None):
-        """
-        Fetches messages from a Discord channel based on the given time range.
-        """
+        """Fetches messages from a Discord channel based on the given time range."""
         
         channel = await self.discord_client.fetch_channel(channel_id)
 
