@@ -33,9 +33,11 @@ class ChannelMapper:
         mapped_name = self.chinese_mapping.get(identifier)
         return self.channel_ids.get(mapped_name)
 
-    def get_raw_cid(self):
+    def get_all_raw_cid(self):
         """Returns the raw channel ID."""
         return list(self.channel_mapping.keys())
 
-
+    def get_all_target_cid(self):
+        """Returns the target channel ID."""
+        return list(self.channel_mapping.values())
 

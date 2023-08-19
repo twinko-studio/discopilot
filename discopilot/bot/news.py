@@ -7,6 +7,7 @@ import tweepy
 
 from discopilot.bot.translate import TranslateBot
 from discopilot.google.google_translate import create_translate_client
+from discopilot.channel_mapper import ChannelMapper
 
 
 
@@ -48,12 +49,12 @@ class NewsBot:
         # Discord 
         self.discord_token = discord_details['token']
         self.guild_id = discord_details['guild_id']
-        self.internal_news_cid = discord_details['internal_news_cid']
-        self.channel_id_cn = discord_details['channel_id_cn']
-        self.channel_id_en = discord_details['channel_id_en']
         self.admin_id = discord_details['admin_id']
         self.emoji_id = discord_details['emoji_id']
         self.command_prefix = discord_details['command_prefix']
+        self.cid_mapper = ChannelMapper(discord_details = discord_details)
+        self.raw_news_cid = self.cid_mapper.get_all_raw_cid()
+        self.all_target_cid = self.cid_mapper.get_all_target_cid()
 
         # Initialize Twitter client
         self.twitter_client = self.initialize_twitter_client()
@@ -91,28 +92,32 @@ class NewsBot:
             if not message.author.bot:
                 return
 
-            print("message.channel.id: " + str(message.channel.id)) 
             # Check for the specific channel you want to listen to
-            if str(message.channel.id) != self.internal_news_cid:
+            if str(message.channel.id) not in self.raw_news_cid:
                 return
-            print("message.embeds: " + str(message.embeds))
+            print("message.channel.id: " + str(message.channel.id))
             # Check if the message contains any embeds
             if message.embeds:
                 for embed in message.embeds:  # Loop through all embeds
-
+                    
                     # breakdown from list to single item to public news room
-                    en_channel = await self.discord_client.fetch_channel(self.channel_id_en)
+                    en_cid = self.mapper.get_target_channel_id(str(message.channel.id))
+                    en_channel = await self.discord_client.fetch_channel(en_cid)
+                    print("en_cid: " + str(en_cid))
+                    print("en_channel: " + str(en_channel))
+
                     await en_channel.send(embed = embed)
                     
                     # Translate the embed title and description to Chinese
                     embed_cn_title = self.translate_bot.translate_to_chinese(str(embed.title))
                     embed_cn_description = self.translate.translate_to_chinese(str(embed.description)) 
-        
                     # Generate Chinese embed (creating a copy to avoid modifying the original)
                     embed_cn = embed.copy()
                     embed_cn.title = embed_cn_title
                     embed_cn.description = embed_cn_description     
-                    cn_channel = await self.discord_client.fetch_channel(self.channel_id_cn)
+                    # get target chinese channel id
+                    cn_cid = self.mapper.get_chinese_channel_id(str(message.channel.id))
+                    cn_channel = await self.discord_client.fetch_channel(cn_cid)
                     await cn_channel.send(embed = embed_cn)
             else:
                 return
@@ -122,11 +127,13 @@ class NewsBot:
             print("on_raw_reaction_add")
             
             if str(payload.user_id) == self.admin_id and str(payload.emoji) == self.emoji_id:
-                print(str(payload.emoji) + "matched")
-                return
-                if(str(payload.channel_id) != self.channel_id_en):
+
+                # only listen to the specific news channel
+                if str(payload.channel_id) not in self.all_target_cid:
                     return
                 
+                print("reaction: playload.channel_id: " + str(payload.channel_id))
+                return
                 # Get the channel and message IDs from the payload
                 channel = self.discord_client.get_channel(payload.channel_id)
                 message = await channel.fetch_message(payload.message_id)
