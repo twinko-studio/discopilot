@@ -3,7 +3,6 @@ from discopilot.configuration_loader import ConfigurationLoader
 
 def main(config_file):
 
-
     # Read the configuration file
     # use loader
     config = ConfigurationLoader.load_config(config_file)
@@ -33,10 +32,6 @@ def main(config_file):
         'channel_mapping': config['Channel_Mapping'],
         'chinese_mapping': config['Chinese_Mapping']
     }
-
-    
-      
-
 
     # Initialize bots
     news_bot = NewsBot(twitter_creds = twitter_creds, 

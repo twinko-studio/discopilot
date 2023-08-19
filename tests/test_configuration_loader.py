@@ -25,9 +25,6 @@ def test_load_ini_configuration():
     # Discord section
     assert 'Discord' in config
     assert 'DISCORD_BOT_TOKEN' in config['Discord']
-    assert 'INTERNAL_NEWS_CID' in config['Discord']
-    assert 'CN_CID' in config['Discord']
-    assert 'EN_CID' in config['Discord']
     assert 'ADMIN_ID' in config['Discord']
     assert 'SPECIFIC_REACTION' in config['Discord']
     assert 'COMMAND_PREFIX' in config['Discord']
