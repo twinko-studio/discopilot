@@ -23,7 +23,6 @@ class ChannelMapper:
         """Given a channel name or ID, returns the mapped target channel ID."""
         if isinstance(identifier, int):  # If an ID is passed
             identifier = self.get_name_from_id(identifier)
-        print("identifer: ", identifier)
         mapped_name = self.channel_mapping.get(identifier)
         return self.channel_ids.get(mapped_name)
 
