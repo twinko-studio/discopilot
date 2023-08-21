@@ -1,5 +1,6 @@
 from discopilot.bot.news import NewsBot
 from discopilot.configuration_loader import ConfigurationLoader
+import os
 
 def main(config_file):
 
@@ -18,7 +19,7 @@ def main(config_file):
     # Extract Google Translate details
     google_translate_details = {
         'project_id': config['Google']['PROJECT_ID'],
-        'credentials_file': config['Google']['GOOGLE_APPLICATION_CREDENTIALS'],
+        'credentials_file': os.path.expanduser(config['Google']['GOOGLE_APPLICATION_CREDENTIALS']),
     }
 
     # Extract Discord details
@@ -30,13 +31,17 @@ def main(config_file):
         'command_prefix': config['Discord']['COMMAND_PREFIX'],
         'channel_ids' : config['Discord_CID'],
         'channel_mapping': config['Channel_Mapping'],
-        'chinese_mapping': config['Chinese_Mapping']
+        'chinese_mapping': config['Chinese_Mapping'],
+        'channel_quotas': config['Channel_Quotas']
     }
+
+    settings = config['Settings']
 
     # Initialize bots
     news_bot = NewsBot(twitter_creds = twitter_creds, 
                        discord_details = discord_details, 
-                       google_translate_details = google_translate_details)
+                       google_translate_details = google_translate_details,
+                       settings = settings)
 
     # Run the bots
     news_bot.run()
