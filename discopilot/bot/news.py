@@ -150,6 +150,9 @@ class NewsBot:
                     
                     if self.channel_tweet_count[en_name] < self.channel_quotas[en_name]:
                         print("Bot tweeting")
+                         # check tweets count first
+                        self.check_and_reset_tweet_count()
+                        
                         tweet_content = f"{embed.title} {embed.url}"
                         self.post_to_twitter(tweet_content)
                  
@@ -183,6 +186,8 @@ class NewsBot:
                 message = await channel.fetch_message(payload.message_id)
                 if message.embeds:
                     for embed in message.embeds:
+                        # check tweets count first
+                        self.check_and_reset_tweet_count()
                         tweet_content = f"{embed.title} {embed.url}"
                         self.post_to_twitter(tweet_content)
                          # save count
@@ -219,12 +224,22 @@ class NewsBot:
 
     def load_tweet_count(self):
         # Check if today's date is stored in the tweet count file
+        current_date = datetime.now().date().isoformat()
+
         if os.path.exists(self.tweet_count_file):
             with open(self.tweet_count_file, 'r') as f:
                 stored_data = f.read().splitlines()
-                self.date = stored_data[0]
-                self.global_tweet_count = int(stored_data[1])
-                self.channel_tweet_count = {line.split(":")[0]: int(line.split(":")[1]) for line in stored_data[2:]}
+                # Check if the stored date matches the current date
+                if stored_data[0] == current_date:
+                    self.date = stored_data[0]
+                    self.global_tweet_count = int(stored_data[1])
+                    self.channel_tweet_count = {line.split(":")[0]: int(line.split(":")[1]) for line in stored_data[2:]}
+                else:
+                    # If the stored date doesn't match, reset everything
+                    self.date = current_date
+                    self.global_tweet_count = 0
+                    self.channel_tweet_count = {channel: 0 for channel in self.channel_quotas.keys()}
+
         else:
             self.date = datetime.now().date().isoformat()
             self.global_tweet_count = 0
@@ -237,6 +252,13 @@ class NewsBot:
             f.write(f"{self.date}\n{self.global_tweet_count}\n")
             for channel, count in self.channel_tweet_count.items():
                 f.write(f"{channel}:{count}\n")
+
+    def check_and_reset_tweet_count(self):
+        current_date = datetime.now().date().isoformat()
+        if self.date != current_date:
+            self.date = current_date
+            self.global_tweet_count = 0
+            self.channel_tweet_count = {channel: 0 for channel in self.channel_quotas.keys()}
 
 
     def initialize_google_translate_client(self):
