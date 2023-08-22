@@ -25,6 +25,7 @@ def main(config_file):
     # Extract Discord details
     discord_details = {
         'token': config['Discord']['DISCORD_BOT_TOKEN'],
+        'dev_token': config['Discord']['DISCORD_BOT_DEV_TOKEN'],
         'guild_id': config['Discord']['TS_GUILD_ID'],
         'admin_id': config['Discord']['ADMIN_ID'],
         'emoji_id': config['Discord']['SPECIFIC_REACTION'],
