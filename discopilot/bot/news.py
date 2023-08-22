@@ -132,6 +132,7 @@ class NewsBot:
 
                     # sleep for a random amount of time for posting to twitter at right time
                     current_hour = datetime.now().hour
+
                     if current_hour in self.high_freq_hrs:
                         sleep_time = random.randint(5, 10) * 60  # 5 to 10 minutes
                     else:
@@ -148,11 +149,11 @@ class NewsBot:
 
                     en_name = self.cid_mapper.get_name_from_id(en_cid)
                     
-                    if self.channel_tweet_count[en_name] < self.channel_quotas[en_name]:
+                    if self.channel_tweet_count[en_name] < int(self.channel_quotas[en_name]):
                         print("Bot tweeting")
                          # check tweets count first
                         self.check_and_reset_tweet_count()
-                        
+
                         tweet_content = f"{embed.title} {embed.url}"
                         self.post_to_twitter(tweet_content)
                  
