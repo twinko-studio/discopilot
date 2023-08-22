@@ -90,7 +90,7 @@ class NewsBot:
         @self.discord_client.event
         async def on_ready():
             self.monitor_channel = await self.discord_client.fetch_channel(self.monitor_cid)
-            await self.monitor_channel.send("News bot is ready!")
+            await self.monitor_channel.send("Hello, the news bot is back online!")
             print(f'Logged in as {self.discord_client.user.name}({self.discord_client.user.id})')
 
         @self.discord_client.event
@@ -146,13 +146,15 @@ class NewsBot:
                         self.monitor_channel.send("tweet limits rate exceeded")
                         return
 
-                    if self.channel_tweet_count[en_cid] < self.channel_quotas[en_cid]:
-                        
+                    en_name = self.cid_mapper.get_name_from_id(en_cid)
+                    
+                    if self.channel_tweet_count[en_name] < self.channel_quotas[en_name]:
+                        print("Bot tweeting")
                         tweet_content = f"{embed.title} {embed.url}"
                         self.post_to_twitter(tweet_content)
                  
                         self.global_tweet_count += 1
-                        self.channel_tweet_count[en_cid] += 1
+                        self.channel_tweet_count[en_name] += 1
                         self.save_tweet_count()
                         
                         # Add reaction to the message
