@@ -8,3 +8,5 @@ PyYAML
 markdown
 nltk
 weasyprint
+transformers
+huggingface-hub
