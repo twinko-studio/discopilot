@@ -1,4 +1,5 @@
 import os
+from discopilot.configuration_loader import ConfigurationLoader
 
 def get_twitter_creds(config):
     return {
@@ -27,3 +28,17 @@ def get_discord_details(config):
         'chinese_mapping': config['Chinese_Mapping'],
         'channel_quotas': config['Channel_Quotas']
     }
+
+def read_content_from_file(filename):
+    with open(filename, 'r') as file:
+        return file.read()
+
+def get_hf_headers():
+    config = ConfigurationLoader.load_config()
+    hf_token = config['HuggingFace']['ACCESS_TOKEN']
+    headers = {"Authorization": f"Bearer {hf_token}"}
+    return headers
+
+def get_hf_api(model_id):
+    API_URL = f"https://api-inference.huggingface.co/models/{model_id}"
+    return API_URL
