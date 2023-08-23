@@ -10,7 +10,7 @@ config = ConfigurationLoader.load_config()
 
 
 # Extract Discord details
-discord_details = discord_details(config)
+discord_details = get_discord_details(config)
 
 intents = discord.Intents.default()  
 intents.message_content = True

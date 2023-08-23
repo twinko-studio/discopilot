@@ -1,6 +1,6 @@
 from discopilot.bot.news import NewsBot
 from discopilot.configuration_loader import ConfigurationLoader
-from discopilot.utils import twitter_creds, google_translate_details, discord_details
+from discopilot.utils import get_twitter_creds, get_google_translate_details, get_discord_details
 
 
 def main(config_file):
@@ -10,13 +10,13 @@ def main(config_file):
     config = ConfigurationLoader.load_config(config_file)
 
     # Extract Twitter credentials
-    twitter_creds = twitter_creds(config)
+    twitter_creds = get_twitter_creds(config)
 
     # Extract Google Translate details
-    google_translate_details = google_translate_details(config)
+    google_translate_details = get_google_translate_details(config)
 
     # Extract Discord details
-    discord_details = discord_details(config)
+    discord_details = get_discord_details(config)
 
     settings = config['Settings']
 
