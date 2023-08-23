@@ -153,7 +153,7 @@ class NewsBot:
                         print("Bot tweeting")
                          # check tweets count first
                         self.check_and_reset_tweet_count()
-
+                    
                         tweet_content = f"{embed.title} {embed.url}"
                         self.post_to_twitter(tweet_content)
                  
