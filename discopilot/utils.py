@@ -1,5 +1,6 @@
 import os
 from discopilot.configuration_loader import ConfigurationLoader
+import requests
 
 def get_twitter_creds(config):
     return {
@@ -30,6 +31,7 @@ def get_discord_details(config):
     }
 
 def read_content_from_file(filename):
+    filename = os.path.expanduser(filename)
     with open(filename, 'r') as file:
         return file.read()
 
