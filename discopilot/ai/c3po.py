@@ -106,12 +106,12 @@ def c3po(engine = "google", model_id = None, project_id = None, credentials_file
         A Translator object.
 
     Examples:
-    >>> c3pobot = c3po()
-    >>> c3pobot.translate_to_chinese("Hello, World!")
-    >>> c3pobot.translate("Hello, World!", target_lang="zh")
-    >>> c3pobot.detect_language("Hello, World!")
-    >>> c3pobot.list_languages()
-    >>> c3pobot.list_languages_with_target("zh")
+        c3pobot = c3po()
+        c3pobot.translate_to_chinese("Hello, World!")
+        c3pobot.translate("Hello, World!", target_lang="zh")
+        c3pobot.detect_language("Hello, World!")
+        c3pobot.list_languages()
+        c3pobot.list_languages_with_target("zh")
     """ 
 
     if engine == "huggingface":
