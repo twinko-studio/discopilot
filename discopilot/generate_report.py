@@ -1,27 +1,12 @@
 import os
-import discord
 from datetime import datetime, timedelta
+from discopilot.ai.summarizer import summarize
+import argparse
+
+import discord
 from discopilot.configuration_loader import ConfigurationLoader
 from discopilot.channel_mapper import ChannelMapper
 from discopilot.utils import get_discord_details
-from discopilot.ai.summarizer import summarize
-
-# Read the configuration file
-config = ConfigurationLoader.load_config()
-
-
-# Extract Discord details
-discord_details = get_discord_details(config)
-
-intents = discord.Intents.default()  
-intents.message_content = True
-intents.reactions = True
-discord_client = discord.Client(intents=intents)
-
-cid_mapper = ChannelMapper(discord_details = discord_details)
-report_file_dir = config['Settings']['REPORT_FILE_DIR']
-
-
 
 def format_msg_embed(msg):   
     
@@ -36,8 +21,6 @@ def format_msg_embed(msg):
         f"[**{embed.title}**]({embed.url})\n{embed.description}"
         for embed in msg.embeds
     ]
-
-    # formatted_embeds = [f"**{embed.title}**\n{embed.description}\n{embed.url}" for embed in msg.embeds]
 
     # If there's only one embed, return its formatted string directly
     if len(formatted_embeds) == 1:
@@ -74,7 +57,7 @@ async def fetch_messages(channel_id, start_time=None, end_time=None, hours=None)
     return messages
 
 
-def write_to_report(content, output_dir, report_type = "report"):
+def write_to_report(content, output_dir, prefix = "report"):
     if output_dir is None:
         print("No output directory specified!")
         return
@@ -89,25 +72,28 @@ def write_to_report(content, output_dir, report_type = "report"):
     # Create a filename with a timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
-    if report_type == "report":
-        output_file = os.path.join(output_dir, f"report_{timestamp}.md")
-        print("Writing full report to file:", output_file)
-    elif report_type == "summary":
-        output_file = os.path.join(output_dir, f"summary_{timestamp}.md")
-        print("Writing abstract to file:", output_file)
-    else:
-        print("Invalid report type!")
-        return
+    output_file = os.path.join(output_dir, f"{prefix}_{timestamp}.md")
+    print(f"Writing {prefix} to file:", output_file)
+
     
     # Write the formatted content to a file
     with open(output_file, "w") as file:
             file.write(content)  
 
 # Assuming you have the fetch_messages and write_to_report functions from before
-async def generate_report(start_time=None, end_time=None, hours=24, output_dir = None):
+async def generate_report(config_file = None, start_time=None, end_time=None, 
+                        hours=24, output_dir = None, summary = False):
+
+    config = ConfigurationLoader.load_config(config_file = config_file)
+    discord_details = get_discord_details(config)
+    cid_mapper = ChannelMapper(discord_details = discord_details)
+
     if output_dir is None:
-        print("No output directory specified!")
-        return
+        print("parsing from config file")
+        output_dir = config['Settings']['REPORT_FILE_DIR']
+        if output_dir is None:
+            print("No output directory specified!")
+            return
     output_dir = os.path.expanduser(output_dir)
     # Fetch messages from each channel in order and write to report
     report_content = ["# Table of Contents"]
@@ -126,9 +112,10 @@ async def generate_report(start_time=None, end_time=None, hours=24, output_dir =
             details.append(section_title)
             if len(msg) > 0:    
                 details.append(msg) 
-                msg_abstract = summarize(msg)
-                abstract.append(msg_abstract)   
-                abstract.append("\n")
+                if summary:
+                    msg_abstract = summarize(msg)
+                    abstract.append(msg_abstract)   
+                    abstract.append("\n")
             else:
                 details.append("No news found")
 
@@ -138,22 +125,15 @@ async def generate_report(start_time=None, end_time=None, hours=24, output_dir =
         toc_link = f"- [{report_titles[channel_name]}](#{toc_link_anchor})"
         report_content.insert(idx+1, toc_link)
     
-    report_content.append("\n")
-    report_content.extend(abstract)
+    if summary:
+        report_content.append("\n")
+        report_content.extend(abstract)
+
     report_content.append("\n")
     report_content.extend(details)
 
     # Write to markdown report
     write_to_report("\n".join(report_content), output_dir = output_dir)
-    write_to_report("\n".join(abstract), output_dir = output_dir, report_type = "summary")
+    if summary:
+        write_to_report("\n".join(abstract), output_dir = output_dir, prefix = "summary")
 
-
-
-@discord_client.event
-async def on_ready():
-    print(f'Logged in as {discord_client.user.name} (ID: {discord_client.user.id})')
-    print('Connected to guild:', discord_client.guilds[0].name)
-    await generate_report(hours=24, output_dir=report_file_dir)
-    await discord_client.close()
-
-discord_client.run(discord_details['dev_token'])

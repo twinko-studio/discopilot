@@ -4,6 +4,10 @@ class ChannelMapper:
     """
 
     def __init__(self, discord_details):
+        if discord_details is None:
+             config = ConfigurationLoader.load_config()
+             discord_details = get_discord_details(config)
+             
         self.channel_ids = discord_details['channel_ids']
         self.channel_mapping = discord_details['channel_mapping']
         self.chinese_mapping = discord_details['chinese_mapping']

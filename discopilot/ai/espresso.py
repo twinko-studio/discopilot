@@ -1,63 +1,82 @@
-
-from collections import Counter
-from datetime import datetime, timedelta
-
-import markdown
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from weasyprint import HTML
-
-nltk.download('punkt')
-nltk.download('stopwords')
-
+from transformers import pipeline
+from discopilot.utils import get_hf_headers, get_hf_api
+import requests
 
 class Espresso:
-    def __init__(self, discord_embeds=[]):
-        self.news_data = [{'title': embed.title, 
-                         'description': embed.description,
-                         'url': embed.url, 
-                         'timestamp': embed.timestamp} 
-                         for embed in discord_embeds]
+    def __init__(self, model_id, **kwargs):
+        self.model_id = model_id
 
-    def daily_digest(self):
-        today = datetime.now().date()
-        return [news for news in self.news_data if 
-                news['timestamp'].date() == today]
+    def press(self, text, **kwargs):
+        raise NotImplementedError("Subclasses should implement this!")
 
-    def weekly_digest(self):
-        today = datetime.now().date()
-        a_week_ago = today - timedelta(days=7)
-        return [news for news in self.news_data if
-                a_week_ago <= news['timestamp'].date() <= today]
 
-    def extract_keywords(self, text):
-        stop_words = set(stopwords.words('english'))
-        word_tokens = word_tokenize(text)
-        filtered_text = [w for w in word_tokens if w.lower() not in stop_words]
-        keywords = Counter(filtered_text)
-        return keywords.most_common(10)  # returns top 10 keywords
+class HuggingFaceEspresso(Espresso):
+    def press(self, text, model_id = "facebook/bart-large-cnn", env = "inference_api",
+                  max_length=500, min_length=100, do_sample=False, **kwargs):
+        self.model_id = model_id
+        if env == "inference_api":
+            print("using inference API")
+            response = hf_text_post(text = text, model_id = model_id, max_length=500, min_length=100, do_sample=False, **kwargs)
+            
+            json_response = response.json()
 
-    def daily_keywords(self):
-        daily_news = self.daily_digest()
-        text = ' '.join([news['title'] + ' ' + news['description']
-                        for news in daily_news])
-        return self.extract_keywords(text)
+            print("response code", response.status_code)
 
-    def weekly_keywords(self):
-        weekly_news = self.weekly_digest()
-        text = ' '.join([news['title'] + ' ' + news['description']
-                        for news in weekly_news])
-        return self.extract_keywords(text)
+            if response.status_code != 200:
+                print(f"Request failed with status code {response.status_code}: {response.text}")
+                return ""
+ 
+            if isinstance(json_response, list) and len(json_response) > 0:
+                if 'summary_text' in json_response[0]:
+                    return json_response[0]['summary_text']
+                else:
+                    print("No summary_text in the first item of the response.")
+                    return ""
+            elif isinstance(json_response, dict) and 'summary_text' in json_response:
+                return json_response['summary_text']
+            else:
+                print("Unexpected response structure.")
+                return ""
 
-    def output_markdown(self, news_data):
-        md_content = "\n".join(
-            [f"## [{news['title']}]({news['url']})\n{news['description']}" for 
-            news in news_data])
-        return md_content
+        elif env == "local":
+            prnit("using local model")
+            summarizer = pipeline("summarization", model=self.model_id)
+            return summarizer(text, max_length=max_length, min_length=min_length, do_sample=do_sample, **kwargs)
+        else:
+            raise ValueError(f"env {env} not supported!")
 
-    def export_html(self, md_content):
-        return markdown.markdown(md_content)
 
-    def export_pdf(self, html_content, output_filename="news_digest.pdf"):
-        HTML(string=html_content).write_pdf(output_filename)
+def prepare_espresso(platform, model_id,  **kwargs):
+    """
+    Prepare the Espresso object using the specified platform and model.
+    """ 
+
+    if platform == "huggingface":
+        return HuggingFaceEspresso(model_id = model_id, **kwargs)
+    else:
+        raise ValueError(f"Platform {platform} not supported!")
+
+
+def espresso(text, model_id="facebook/bart-large-cnn", platform="huggingface", env = "inference_api", **kwargs):
+    """
+    Summarize text using the specified model and platform.
+    """
+    coffee = prepare_espresso(platform, model_id = model_id, **kwargs)
+    print("pressing...")
+    return coffee.press(text)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Espresso: text summarization tool.')
+
+    # Add arguments
+    parser.add_argument('text', type=str, help='The text to summarize.')
+    parser.add_argument('--model_id', type=str, default="facebook/bart-large-cnn", help='The model ID to use for summarization.')
+    parser.add_argument('--platform', type=str, default="huggingface", choices=["huggingface"], help='The platform to use for summarization.')
+    parser.add_argument('--env', type=str, default="inference_api", choices=["inference_api", "local"], help='The environment in which to run the summarization.')
+
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Call espresso with parsed arguments
+    result = espresso(args.text, model_id=args.model_id, platform=args.platform, env=args.env)
+    print(result)

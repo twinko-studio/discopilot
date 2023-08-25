@@ -1,10 +1,8 @@
-from google.cloud import translate
+from google.cloud import translate, translate_v2
 from google.oauth2.service_account import Credentials
 import os
-import configparser
 
-
-def create_translate_client(credentials_file: str):
+def create_translate_client(credentials_file: str, version = "default"):
     """
     Create a translate client to translate text based on the environment. If running on Google App Engine, no need to provide credentials. 
     If running elsewhere, use a JSON key file for credentials.
@@ -17,19 +15,31 @@ def create_translate_client(credentials_file: str):
     Examples:
     >>> create_translate_client()
     """
+    trans_credentials = Credentials.from_service_account_file(credentials_file)
     # Check if running on Google App Engine, set this environment variable in app.yaml or other environment configuration
     if os.environ.get("IS_APP_ENGINE"):
         # Running on App Engine, no need to provide credentials
-        client = translate.TranslationServiceClient()
+        if version == "default":
+            client = translate.TranslationServiceClient()
+        elif version == "v2":
+            client = translate_v2.Client()
+        else:
+            raise Exception("Please provide a valid version: default or v2.")
     else:
         if not credentials_file:
             raise Exception("Please provide the path of your JSON key file.")
-        trans_credentials = Credentials.from_service_account_file(credentials_file)
-        client = translate.TranslationServiceClient(credentials = trans_credentials)
+       
+        if version == "default":
+            client = translate.TranslationServiceClient(credentials = trans_credentials)
+        elif version == "v2":
+            client = translate_v2.Client(credentials = trans_credentials)
+        else:
+            raise Exception("Please provide a valid version: default or v2.")
+
     return client
 
 
-def translate_text(text: str, target_language_code: str, project_id: str, client) -> translate.Translation:  
+def translate_text(text: str, target_language_code: str, project_id: str, client):
     """
     Translate text to target language
 

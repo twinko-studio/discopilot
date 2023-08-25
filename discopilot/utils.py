@@ -42,3 +42,11 @@ def get_hf_headers():
 def get_hf_api(model_id):
     API_URL = f"https://api-inference.huggingface.co/models/{model_id}"
     return API_URL
+
+def hf_text_post(text, model_id, **kwargs):
+    API_URL = get_hf_api(model_id)
+    headers = get_hf_headers()
+    payload = {"inputs": text, "parameters": kwargs}
+    response = requests.post(API_URL, headers=headers, json=payload)
+    return response
+

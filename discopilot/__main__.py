@@ -3,7 +3,7 @@ from discopilot.configuration_loader import ConfigurationLoader
 from discopilot.utils import get_twitter_creds, get_google_translate_details, get_discord_details
 
 
-def main(config_file):
+def hedwig(config_file, version = "production"):
 
     # Read the configuration file
     # use loader
@@ -21,15 +21,15 @@ def main(config_file):
     settings = config['Settings']
 
     # Initialize bots
-    news_bot = NewsBot(twitter_creds = twitter_creds, 
+    hedwig_bot  = Hedwig(twitter_creds = twitter_creds, 
                        discord_details = discord_details, 
                        google_translate_details = google_translate_details,
                        settings = settings)
 
     # Run the bots
-    news_bot.run()
+    hedwig_bot.fly(version = version)
 
 if __name__ == '__main__':
     import sys
     config_file = sys.argv[1] if len(sys.argv) == 2 else None
-    main(config_file)
+    hedwig(config_file)
