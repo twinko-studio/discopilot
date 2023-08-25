@@ -14,7 +14,7 @@ class HuggingFaceEspresso(Espresso):
     def press(self, text, model_id = "facebook/bart-large-cnn", env = "inference_api",
                   max_length=500, min_length=100, do_sample=False, **kwargs):
         self.model_id = model_id
-
+        
         # write a functino to tell if a string is existing file
         # if it is, read the content from the file
         # if not, treat it as a string
@@ -25,7 +25,7 @@ class HuggingFaceEspresso(Espresso):
 
         if env == "inference_api":
             print("Using HuggingFace inference API:\n")
-            response = hf_text_post(text = text, model_id = model_id, max_length=500, min_length=100, do_sample=False, **kwargs)
+            response = hf_text_post(text = text, model_id = model_id, max_length=max_length, min_length=min_length, do_sample=do_sample, **kwargs)
             res = get_summary_from_response(response)
             return res
 

@@ -30,7 +30,7 @@ def c3po_cli(args):
 
 def espresso_cli(args):
     esp = espresso(model_id=args.model_id, platform=args.platform, env=args.env)
-    res = esp.press(args.text)
+    res = esp.press(args.text, max_length=args.max_length, min_length=args.min_length, do_sample=args.do_sample)
     print(res)
 
 def main():
@@ -51,8 +51,11 @@ def main():
 
     ## expresso subcommand: the summarizer
     discopilot espresso --help
-    discopilot expresso "Hello, World! I am a robot, and I am here to help you."
+    # discopilot espresso "Hello, World! I am a robot, and I am here to help you."
+    discopilot espresso "hello world"
     discopilot espresso ~/Code/twinko-studio/discopilot/tests/data/article.txt
+    discopilot espresso ~/report/report_20230822_204907.md 
+    discopilot espresso ~/Code/twinko-studio/discopilot/tests/data/article.txt --model_id sshleifer/distilbart-cnn-12-6
     
 
     '''
@@ -84,6 +87,9 @@ def main():
             help="The platform to use. Currently supports 'huggingface'.")
     parser_espresso.add_argument("--env", default = "inference_api", choices=["inference_api", "local"],
             help="The environment to use. Currently supports 'inference_api' and 'local'.")
+    parser_espresso.add_argument("--max_length", default = 500, type=int, help="The maximum length of the summary.")
+    parser_espresso.add_argument("--min_length", default = 100, type=int, help="The minimum length of the summary.")
+    parser_espresso.add_argument("--do_sample", action='store_true', help="Whether to use sampling.")
     parser_espresso.set_defaults(func=espresso_cli)
 
     # Create parser for "hedwig" subcommand
