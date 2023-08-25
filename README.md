@@ -44,26 +44,28 @@ Features:
 
 ```bash
 # start hedwig bot on discord
-discopilot.py hedwig fly 
+discopilot hedwig fly 
 # start hedwig bot on discord with dev version
-discopilot.py hedwig fly --version dev 
+discopilot hedwig fly --version dev 
 # fetch news from channel 1234567890 in last 24 hours
-discopilot.py hedwig fetch --channel 1234567890 --hour 24 
+discopilot hedwig fetch --channel 1234567890 --hour 24 
 # fetch news from channel 1234567890 between 2023-08-23 and 2023-08-24
-discopilot.py hedwig fetch --channel 1234567890 --start 2023-08-23 --end 2023-08-24 
+discopilot hedwig fetch --channel 1234567890 --start 2023-08-23 --end 2023-08-24 
 # send a message to channel 1234567890
-discopilot.py hedwig hoot "Hello World" --channel 1234567890
+discopilot hedwig hoot "Hello World" --channel 1234567890
 # send a message to channel named monitor in config file
-discopilot.py hedwig hoot "Hello World" --channel_name monitor
+discopilot hedwig hoot "Hello World" --channel_name monitor
 ```
 
 ### Espresso: the information summarizer AI
 
 ```bash
-discopilot.py espresso ./news.md > ./news_summary.md
-discopilot.py espresso ./news.md --output_dir ./output
-discopilot.py espresso ./news.md --filter spam
-discopilot.py espresso --summary
+discopilot espresso --help
+# discopilot espresso "Hello, World! I am a robot, and I am here to help you."
+discopilot espresso "hello world"
+discopilot espresso ~/Code/twinko-studio/discopilot/tests/data/article.txt
+discopilot espresso ~/report/report_20230822_204907.md 
+discopilot espresso ~/Code/twinko-studio/discopilot/tests/data/article.txt --model_id sshleifer/distilbart-cnn-12-6
 ```
 
 ### C-3PO: the translator AI
@@ -83,4 +85,5 @@ discopilot c3po 'Hello, World!' --target ja
 ### the spam detector AI
 
 ```bash
+
 ```

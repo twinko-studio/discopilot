@@ -52,3 +52,23 @@ def hf_text_post(text, model_id, **kwargs):
     response = requests.post(API_URL, headers=headers, json=payload)
     return response
 
+def get_summary_from_response(response):
+
+    json_response = response.json()
+
+    if response.status_code != 200:
+        print(f"Request failed with status code {response.status_code}: {response.text}")
+        return ""
+
+    if isinstance(json_response, list) and len(json_response) > 0:
+        if 'summary_text' in json_response[0]:
+            return json_response[0]['summary_text']
+        else:
+            print("No summary_text in the first item of the response.")
+            return ""
+    elif isinstance(json_response, dict) and 'summary_text' in json_response:
+        return json_response['summary_text']
+    else:
+        print("Unexpected response structure.")
+        return ""
+

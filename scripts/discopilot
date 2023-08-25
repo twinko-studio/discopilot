@@ -2,6 +2,7 @@
 
 import argparse
 from discopilot.ai.c3po import c3po
+from discopilot.ai.espresso import espresso
 
 def c3po_cli(args):
     c3pobot = c3po(engine=args.engine, model_id=args.model_id, 
@@ -27,12 +28,19 @@ def c3po_cli(args):
         res = c3pobot.translate(args.text, args.target)
         print(res)
 
+def espresso_cli(args):
+    esp = espresso(model_id=args.model_id, platform=args.platform, env=args.env)
+    res = esp.press(args.text)
+    print(res)
 
 def main():
     '''
-    The main function of the C-3PO CLI.
+    The main function of the discopilot CLI.
 
     Examples:
+
+    ## c3po subcommand: the translator
+
     discopilot c3po --help
     discopilot c3po --list
     discopilot c3po --list_target zh
@@ -40,6 +48,12 @@ def main():
     discopilot c3po 'Hello, World!' --target zh
     discopilot c3po 'Hello, World!' --to_zh
     discopilot c3po 'Hello, World!' --target ja
+
+    ## expresso subcommand: the summarizer
+    discopilot espresso --help
+    discopilot expresso "Hello, World! I am a robot, and I am here to help you."
+    discopilot espresso ~/Code/twinko-studio/discopilot/tests/data/article.txt
+    
 
     '''
     parser = argparse.ArgumentParser(description="Discopilot CLI")
@@ -53,7 +67,7 @@ def main():
     parser_c3po.add_argument("--target", help="The target language code.")
     parser_c3po.add_argument("--to_zh", action='store_true', help="Translate to Chinese.")
     parser_c3po.add_argument("--detect", action='store_true', help="Detect the language of the text.")
-    pparser_c3po.add_argument("--list", action='store_true', help="List all supported languages.")
+    parser_c3po.add_argument("--list", action='store_true', help="List all supported languages.")
     parser_c3po.add_argument("--list_target", help="List all supported languages with target lang.")
     parser_c3po.add_argument("--engine", default = "google", choices=["google", "huggingface"],
             help="The translation engine to use. Currently supports 'google' and 'huggingface'.")
@@ -62,7 +76,15 @@ def main():
     parser_c3po.add_argument("--credentials_file", help="The path to the Google Cloud credentials file. Required for Google Cloud.")
     parser_c3po.set_defaults(func=c3po_cli)
     
-    # Create parser for "expresso" subcommand
+    # Create parser for "espresso" subcommand
+    parser_espresso = subparsers.add_parser("espresso", help="Espresso Summarizer") 
+    parser_espresso.add_argument("text", help="The text to summarize, either a string or a file path.")
+    parser_espresso.add_argument("--model_id", default = "facebook/bart-large-cnn", help="The model to use. Required for HuggingFace.")
+    parser_espresso.add_argument("--platform", default = "huggingface", choices=["huggingface"],
+            help="The platform to use. Currently supports 'huggingface'.")
+    parser_espresso.add_argument("--env", default = "inference_api", choices=["inference_api", "local"],
+            help="The environment to use. Currently supports 'inference_api' and 'local'.")
+    parser_espresso.set_defaults(func=espresso_cli)
 
     # Create parser for "hedwig" subcommand
 

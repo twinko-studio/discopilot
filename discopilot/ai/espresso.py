@@ -1,5 +1,5 @@
-from discopilot.utils import hf_text_post
-
+from discopilot.utils import hf_text_post, read_content_from_file, get_summary_from_response
+import os
 #from transformers import pipeline
 
 class Espresso:
@@ -14,29 +14,21 @@ class HuggingFaceEspresso(Espresso):
     def press(self, text, model_id = "facebook/bart-large-cnn", env = "inference_api",
                   max_length=500, min_length=100, do_sample=False, **kwargs):
         self.model_id = model_id
+
+        # write a functino to tell if a string is existing file
+        # if it is, read the content from the file
+        # if not, treat it as a string
+        if isinstance(text, str):
+            if os.path.isfile(os.path.expanduser(text)):
+                text = read_content_from_file(text)
+
+
         if env == "inference_api":
-            print("using inference API")
+            print("Using HuggingFace inference API:\n")
             response = hf_text_post(text = text, model_id = model_id, max_length=500, min_length=100, do_sample=False, **kwargs)
-            
-            json_response = response.json()
+            res = get_summary_from_response(response)
+            return res
 
-            print("response code", response.status_code)
-
-            if response.status_code != 200:
-                print(f"Request failed with status code {response.status_code}: {response.text}")
-                return ""
- 
-            if isinstance(json_response, list) and len(json_response) > 0:
-                if 'summary_text' in json_response[0]:
-                    return json_response[0]['summary_text']
-                else:
-                    print("No summary_text in the first item of the response.")
-                    return ""
-            elif isinstance(json_response, dict) and 'summary_text' in json_response:
-                return json_response['summary_text']
-            else:
-                print("Unexpected response structure.")
-                return ""
 
         elif env == "local":
             prnit("using local model")
@@ -56,9 +48,11 @@ def espresso(model_id="facebook/bart-large-cnn", platform="huggingface", env="in
     article = read_content_from_file("~/Code/twinko-studio/discopilot/tests/data/article.txt")
     esp = espresso()
     esp.press(article)
-    # the same as default
+    # this is equivalent to:
     esp = espresso(model_id="facebook/bart-large-cnn", platform="huggingface", env="inference_api")
     esp.press(article)
+    # this is equivalent to:
+    esp.press("~/Code/twinko-studio/discopilot/tests/data/article.txt")
     """
     if platform == "huggingface":
         return HuggingFaceEspresso(model_id = model_id, **kwargs)
