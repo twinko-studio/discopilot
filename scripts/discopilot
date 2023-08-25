@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+
+import argparse
+from discopilot.ai.c3po import c3po
+
+def c3po_cli(args):
+    c3pobot = c3po(engine=args.engine, model_id=args.model_id, 
+                project_id=args.project_id, credentials_file=args.credentials_file)
+ 
+    if args.detect:
+        res = c3pobot.detect_language(args.text)    
+        print(res)
+
+    if args.list:
+        res = c3pobot.list_languages()
+        
+    
+    if args.list_target is not None:
+        res = c3pobot.list_languages_with_target(args.list_target)
+    
+
+    if args.to_zh:
+        res = c3pobot.translate_to_chinese(args.text)   
+        print(res)
+    
+    if args.target:
+        res = c3pobot.translate(args.text, args.target)
+        print(res)
+
+
+def main():
+    '''
+    The main function of the C-3PO CLI.
+
+    Examples:
+    discopilot c3po --help
+    discopilot c3po --list
+    discopilot c3po --list_target zh
+    discopilot c3po --detect 'Hello, World!'
+    discopilot c3po 'Hello, World!' --target zh
+    discopilot c3po 'Hello, World!' --to_zh
+    discopilot c3po 'Hello, World!' --target ja
+
+    '''
+    parser = argparse.ArgumentParser(description="Discopilot CLI")
+
+    # Create subparsers object
+    subparsers = parser.add_subparsers()
+
+    # Create parser for "c3po" subcommand
+    parser_report = subparsers.add_parser("c3po", help="C-3PO Translator")
+    parser_report.add_argument("text", help="The text to translate.", nargs='?')
+    parser_report.add_argument("--target", help="The target language code.")
+    parser_report.add_argument("--to_zh", action='store_true', help="Translate to Chinese.")
+    parser_report.add_argument("--detect", action='store_true', help="Detect the language of the text.")
+    parser_report.add_argument("--list", action='store_true', help="List all supported languages.")
+    parser_report.add_argument("--list_target", help="List all supported languages with target lang.")
+    parser_report.add_argument("--engine", default = "google", choices=["google", "huggingface"],
+            help="The translation engine to use. Currently supports 'google' and 'huggingface'.")
+    parser_report.add_argument("--model_id", help="The model to use. Required for HuggingFace.")
+    parser_report.add_argument("--project_id", help="The Google Cloud project ID. Required for Google Cloud.")
+    parser_report.add_argument("--credentials_file", help="The path to the Google Cloud credentials file. Required for Google Cloud.")
+    parser_report.set_defaults(func=c3po_cli)
+    
+    # Create parser for "expresso" subcommand
+    # Create parser for "hedwig" subcommand
+
+    args = parser.parse_args()
+    if 'func' in args:
+        args.func(args)
+    else:
+        parser.print_help()
+
+if __name__ == "__main__":
+    main()
