@@ -1,6 +1,6 @@
-from transformers import pipeline
-from discopilot.utils import get_hf_headers, get_hf_api
-import requests
+from discopilot.utils import hf_text_post
+
+#from transformers import pipeline
 
 class Espresso:
     def __init__(self, model_id, **kwargs):
@@ -46,37 +46,22 @@ class HuggingFaceEspresso(Espresso):
             raise ValueError(f"env {env} not supported!")
 
 
-def prepare_espresso(platform, model_id,  **kwargs):
-    """
-    Prepare the Espresso object using the specified platform and model.
-    """ 
 
+def espresso(model_id="facebook/bart-large-cnn", platform="huggingface", env="inference_api", **kwargs):
+    """
+    Summarize text using the specified model and platform.
+
+    Example:
+    from discopilot.utils import read_content_from_file
+    article = read_content_from_file("~/Code/twinko-studio/discopilot/tests/data/article.txt")
+    esp = espresso()
+    esp.press(article)
+    # the same as default
+    esp = espresso(model_id="facebook/bart-large-cnn", platform="huggingface", env="inference_api")
+    esp.press(article)
+    """
     if platform == "huggingface":
         return HuggingFaceEspresso(model_id = model_id, **kwargs)
     else:
         raise ValueError(f"Platform {platform} not supported!")
 
-
-def espresso(text, model_id="facebook/bart-large-cnn", platform="huggingface", env = "inference_api", **kwargs):
-    """
-    Summarize text using the specified model and platform.
-    """
-    coffee = prepare_espresso(platform, model_id = model_id, **kwargs)
-    print("pressing...")
-    return coffee.press(text)
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Espresso: text summarization tool.')
-
-    # Add arguments
-    parser.add_argument('text', type=str, help='The text to summarize.')
-    parser.add_argument('--model_id', type=str, default="facebook/bart-large-cnn", help='The model ID to use for summarization.')
-    parser.add_argument('--platform', type=str, default="huggingface", choices=["huggingface"], help='The platform to use for summarization.')
-    parser.add_argument('--env', type=str, default="inference_api", choices=["inference_api", "local"], help='The environment in which to run the summarization.')
-
-    # Parse arguments
-    args = parser.parse_args()
-
-    # Call espresso with parsed arguments
-    result = espresso(args.text, model_id=args.model_id, platform=args.platform, env=args.env)
-    print(result)
