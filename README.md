@@ -69,13 +69,13 @@ discopilot.py espresso --summary
 ### C-3PO: the translator AI
 
 ```bash
-discopilot.py c3po "Hello World" --target_lang zh-cn
-discopilot.py c3po "Hello World" --target_lang zh-cn --engine google
-# discopilot.py c3po "Hello World" --target zh-cn --engine huggingface
-discopilot.py c3po "Hello World" --list-engines
-discopilot.py c3po --list-supported_target --source-lang "en"
-discopilot.py c3po --list-sources
-discopilot.py c3po detect "Hello World"
+discopilot c3po --help
+discopilot c3po --list
+discopilot c3po --list_target zh
+discopilot c3po --detect 'Hello, World!'
+discopilot c3po 'Hello, World!' --target zh
+discopilot c3po 'Hello, World!' --to_zh
+discopilot c3po 'Hello, World!' --target ja
 ```
 
 ```
