@@ -3,3 +3,5 @@ __pycache__/
 discopilot.egg-info/
 .env
 build/
+README.html
+README_files/
