@@ -48,21 +48,22 @@ def main():
     subparsers = parser.add_subparsers()
 
     # Create parser for "c3po" subcommand
-    parser_report = subparsers.add_parser("c3po", help="C-3PO Translator")
-    parser_report.add_argument("text", help="The text to translate.", nargs='?')
-    parser_report.add_argument("--target", help="The target language code.")
-    parser_report.add_argument("--to_zh", action='store_true', help="Translate to Chinese.")
-    parser_report.add_argument("--detect", action='store_true', help="Detect the language of the text.")
-    parser_report.add_argument("--list", action='store_true', help="List all supported languages.")
-    parser_report.add_argument("--list_target", help="List all supported languages with target lang.")
-    parser_report.add_argument("--engine", default = "google", choices=["google", "huggingface"],
+    parser_c3po = subparsers.add_parser("c3po", help="C-3PO Translator")
+    parser_c3po.add_argument("text", help="The text to translate.", nargs='?')
+    parser_c3po.add_argument("--target", help="The target language code.")
+    parser_c3po.add_argument("--to_zh", action='store_true', help="Translate to Chinese.")
+    parser_c3po.add_argument("--detect", action='store_true', help="Detect the language of the text.")
+    pparser_c3po.add_argument("--list", action='store_true', help="List all supported languages.")
+    parser_c3po.add_argument("--list_target", help="List all supported languages with target lang.")
+    parser_c3po.add_argument("--engine", default = "google", choices=["google", "huggingface"],
             help="The translation engine to use. Currently supports 'google' and 'huggingface'.")
-    parser_report.add_argument("--model_id", help="The model to use. Required for HuggingFace.")
-    parser_report.add_argument("--project_id", help="The Google Cloud project ID. Required for Google Cloud.")
-    parser_report.add_argument("--credentials_file", help="The path to the Google Cloud credentials file. Required for Google Cloud.")
-    parser_report.set_defaults(func=c3po_cli)
+    parser_c3po.add_argument("--model_id", help="The model to use. Required for HuggingFace.")
+    parser_c3po.add_argument("--project_id", help="The Google Cloud project ID. Required for Google Cloud.")
+    parser_c3po.add_argument("--credentials_file", help="The path to the Google Cloud credentials file. Required for Google Cloud.")
+    parser_c3po.set_defaults(func=c3po_cli)
     
     # Create parser for "expresso" subcommand
+
     # Create parser for "hedwig" subcommand
 
     args = parser.parse_args()
