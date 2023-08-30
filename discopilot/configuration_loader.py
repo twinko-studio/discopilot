@@ -22,6 +22,8 @@ class ConfigurationLoader:
             config_file = os.environ.get('DISCOPILOT_CONFIG')
             if config_file is None:
                 raise ValueError("config_file cannot be None")
+            elif os.path.exists(config_file) is False:
+                raise ValueError(f"config_file {config_file} does not exist")
 
         file_extension = os.path.splitext(config_file)[1]
         
