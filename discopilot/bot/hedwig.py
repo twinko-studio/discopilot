@@ -1,16 +1,16 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import discord
 from discord import app_commands, tasks
 import tweepy
 
-from discopilot.bot.translate import TranslateBot
-from discopilot.google.google_translate import create_translate_client
 from discopilot.channel_mapper import ChannelMapper
+from discopilot.ai.c3po import c3po
 
 import os
 import random
 import asyncio
+
 
 
 
@@ -19,20 +19,25 @@ class Hedwig:
     A bot that interacts with Twitter, Google Translate, and Discord.
     """
 
-    def __init__(self, twitter_creds, discord_details, google_translate_details, settings):
+    def __init__(self, config_file):
         """Initialize the NewsBot with credentials for Twitter, Discord, and Google 
         Translate."""
         
+        # Read the configuration file
+        config = ConfigurationLoader.load_config(config_file)
+
+        # Extract information
+        twitter_creds = get_twitter_creds(config)
+        google_translate_details = get_google_translate_details(config)
+        discord_details = get_discord_details(config)
+        settings = config['Settings']
+
         # Twitter rate limit control
-
-
         # Twitter credentials
         self.consumer_key = twitter_creds['consumer_key']
         self.consumer_secret = twitter_creds['consumer_secret']
         self.access_token = twitter_creds['access_token']
         self.access_token_secret = twitter_creds['access_token_secret']
-
-     
 
         # Discord 
         self.discord_token = discord_details['token']
@@ -47,19 +52,32 @@ class Hedwig:
         self.monitor_cid = self.cid_mapper.get_id_from_name('MONITOR_CID')
         self.channel_quotas = discord_details['channel_quotas']
 
+        # Google Translate details
+        self.project_id = google_translate_details['project_id']
+        self.credentials_file = google_translate_details['credentials_file']
+
         # Initialize Twitter client
         self.twitter_client = self.initialize_twitter_client()
        
 
-        # Initialize Google Translate client
-        self.translate_bot = TranslateBot(project_id = google_translate_details['project_id'], 
-                                          credentials_file = google_translate_details['credentials_file'])
+        # Initialize Google Translate client c3po
+        self.c3po = c3po(engine="google", project_id=self.project_id, credentials_file=self.credentials_file)
 
-        # Initialize Discord bot
-        self.intents = discord.Intents.default()  
-        self.intents.message_content = True
-        self.intents.reactions = True
-        self.discord_client = self.initialize_discord_client()
+        # Initialize Discord client
+        def create_discord_client(message_content = True, reactions = True):
+            """Initialize the Discord bot."""
+            intents = discord.Intents.default()  
+            intents.message_content = message_content
+            intents.reactions = reactions
+            discord_client = discord.Client(intents=intents)
+            return discord_client
+        
+        def create_discord_slash_client(discord_client):
+            """Initialize the Discord bot."""
+            app_commands.CommandTree(discord_client)
+            return app_commands
+
+        self.discord_client = create_discord_client()
         self.tree = app_commands.CommandTree(self.discord_client)
 
         # setup discord event
@@ -78,12 +96,6 @@ class Hedwig:
         self.load_tweet_count()
         
      
-    
-    def initialize_discord_client(self):
-        """Initialize the Discord bot."""
-        discord_client = discord.Client(intents = self.intents)
-        return discord_client
-        
 
     def setup_discord_events(self):
         """Set up Discord events for handling messages and reactions."""
@@ -153,8 +165,8 @@ class Hedwig:
                     en_msg = await en_channel.send(embed = embed)
                     
                     # Translate the embed title and description to Chinese
-                    embed_cn_title = self.translate_bot.translate_to_chinese(str(embed.title))
-                    embed_cn_description = self.translate_bot.translate_to_chinese(str(embed.description)) 
+                    embed_cn_title = self.c3po.translate_to_chinese(str(embed.title))
+                    embed_cn_description = self.c3po.translate_to_chinese(str(embed.description)) 
                     # Generate Chinese embed (creating a copy to avoid modifying the original)
                     embed_cn = embed.copy()
                     embed_cn.title = embed_cn_title
@@ -264,12 +276,6 @@ class Hedwig:
             self.date = current_date
             self.global_tweet_count = 0
             self.channel_tweet_count = {channel: 0 for channel in self.channel_quotas.keys()}
-
-
-    def initialize_google_translate_client(self):
-        """Initialize the Google Translate client."""
-        translate_client = create_translate_client()
-        return translate_client
 
     def post_to_twitter(self, tweet_text):
         """Post a tweet to Twitter."""
