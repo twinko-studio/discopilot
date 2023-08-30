@@ -2,7 +2,8 @@ import os
 from discopilot.configuration_loader import ConfigurationLoader
 import requests
 
-def get_twitter_creds(config):
+def get_twitter_creds(config_file):
+    config = ConfigurationLoader.load_config(config_file)
     return {
         'consumer_key': config['Twitter']['CONSUMER_KEY'],
         'consumer_secret': config['Twitter']['CONSUMER_SECRET'],
@@ -10,13 +11,15 @@ def get_twitter_creds(config):
         'access_token_secret': config['Twitter']['ACCESS_TOKEN_SECRET'],
     }   
 
-def get_google_translate_details(config):
+def get_google_translate_details(config_file):
+    config = ConfigurationLoader.load_config(config_file)
     return {
         'project_id': config['Google']['PROJECT_ID'],
         'credentials_file': os.path.expanduser(config['Google']['GOOGLE_APPLICATION_CREDENTIALS']),
     }   
 
-def get_discord_details(config):
+def get_discord_details(config_file):
+    config = ConfigurationLoader.load_config(config_file)
     return {
         'token': config['Discord']['DISCORD_BOT_TOKEN'],
         'dev_token': config['Discord']['DISCORD_BOT_DEV_TOKEN'],
