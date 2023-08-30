@@ -8,7 +8,6 @@ def hedwig(config_file, version = "production"):
     # Read the configuration file
     # use loader
     config = ConfigurationLoader.load_config(config_file)
-
     # Extract Twitter credentials
     twitter_creds = get_twitter_creds(config)
 
@@ -21,10 +20,7 @@ def hedwig(config_file, version = "production"):
     settings = config['Settings']
 
     # Initialize bots
-    hedwig_bot  = Hedwig(twitter_creds = twitter_creds, 
-                       discord_details = discord_details, 
-                       google_translate_details = google_translate_details,
-                       settings = settings)
+    hedwig_bot  = Hedwig(config))
 
     # Run the bots
     hedwig_bot.fly(version = version)
