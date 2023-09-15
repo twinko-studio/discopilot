@@ -1,5 +1,5 @@
 from google.cloud import translate_v2 as translate
-from discopilot.google.google_translate import create_translate_client, translate_text, translate_to_chinese
+from discopilot.ai.google_translate import create_translate_client, translate_text, translate_to_chinese
 from discopilot.bot.translate import TranslateBot
 import configparser
 

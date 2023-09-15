@@ -4,24 +4,8 @@ from discopilot.utils import get_twitter_creds, get_google_translate_details, ge
 
 
 def hedwig(config_file, version = "production"):
-
-    # Read the configuration file
-    # use loader
-    config = ConfigurationLoader.load_config(config_file)
-    # Extract Twitter credentials
-    twitter_creds = get_twitter_creds(config)
-
-    # Extract Google Translate details
-    google_translate_details = get_google_translate_details(config)
-
-    # Extract Discord details
-    discord_details = get_discord_details(config)
-
-    settings = config['Settings']
-
     # Initialize bots
-    hedwig_bot  = Hedwig(config))
-
+    hedwig_bot  = Hedwig(config_file)
     # Run the bots
     hedwig_bot.fly(version = version)
 

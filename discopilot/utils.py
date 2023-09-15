@@ -33,6 +33,10 @@ def get_discord_details(config_file):
         'channel_quotas': config['Channel_Quotas']
     }
 
+def get_settings(config_file):
+    config = ConfigurationLoader.load_config(config_file)
+    return config['Settings']
+
 def read_content_from_file(filename):
     filename = os.path.expanduser(filename)
     with open(filename, 'r') as file:

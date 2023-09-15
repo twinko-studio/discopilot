@@ -3,6 +3,7 @@
 import argparse
 from discopilot.ai.c3po import c3po
 from discopilot.ai.espresso import espresso
+from discopilot.bot.twitter import TwitterBot
 
 def c3po_cli(args):
     c3pobot = c3po(engine=args.engine, model_id=args.model_id, 
@@ -33,6 +34,10 @@ def espresso_cli(args):
     res = esp.press(args.text, max_length=args.max_length, min_length=args.min_length, do_sample=args.do_sample)
     print(res)
 
+def twitter_cli(args):
+    twitter_bot = TwitterBot()
+    twitter_bot.post(args.post)
+
 def main():
     '''
     The main function of the discopilot CLI.
@@ -56,6 +61,14 @@ def main():
     discopilot espresso ~/Code/twinko-studio/discopilot/tests/data/article.txt
     discopilot espresso ~/report/report_20230822_204907.md 
     discopilot espresso ~/Code/twinko-studio/discopilot/tests/data/article.txt --model_id sshleifer/distilbart-cnn-12-6
+
+    
+    ## twitter post
+    discopilot twitter --post 'Hello, World!'
+
+    ## discord post
+    discopilot discord --post 'Hello, World!' --channel_id 1234567890
+
     
 
     '''
@@ -91,6 +104,11 @@ def main():
     parser_espresso.add_argument("--min_length", default = 100, type=int, help="The minimum length of the summary.")
     parser_espresso.add_argument("--do_sample", action='store_true', help="Whether to use sampling.")
     parser_espresso.set_defaults(func=espresso_cli)
+
+    # Create parser for "twitter" subcommand
+    parser_twitter = subparsers.add_parser("twitter", help="Twitter Bot")
+    parser_twitter.add_argument("--post", help="Post a tweet.")
+    parser_twitter.set_defaults(func=twitter_cli)
 
     # Create parser for "hedwig" subcommand
 

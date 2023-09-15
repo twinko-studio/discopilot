@@ -12,7 +12,7 @@ class TwitterBot:
     twitter_bot = TwitterBot(config_file_path)
     twitter_bot.post("Hello, world!")
     """
-    def __init__(self, config_file, wait_on_rate = True):
+    def __init__(self, config_file = None, wait_on_rate = True):
         # Initialization code, e.g., authentication
         twitter_creds = get_twitter_creds(config_file)
         settings = get_settings(config_file)

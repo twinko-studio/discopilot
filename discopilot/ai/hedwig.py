@@ -63,19 +63,6 @@ class Hedwig:
         # Initialize Google Translate client c3po
         self.c3po = c3po(engine="google", project_id=self.project_id, credentials_file=self.credentials_file)
 
-        # Initialize Discord client
-        def create_discord_client(message_content = True, reactions = True):
-            """Initialize the Discord bot."""
-            intents = discord.Intents.default()  
-            intents.message_content = message_content
-            intents.reactions = reactions
-            discord_client = discord.Client(intents=intents)
-            return discord_client
-        
-        def create_discord_slash_client(discord_client):
-            """Initialize the Discord bot."""
-            app_commands.CommandTree(discord_client)
-            return app_commands
 
         self.discord_client = create_discord_client()
         self.tree = app_commands.CommandTree(self.discord_client)

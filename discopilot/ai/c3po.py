@@ -1,6 +1,6 @@
 from discopilot.utils import get_google_translate_details
 from discopilot.configuration_loader import ConfigurationLoader
-from discopilot.google.google_translate import create_translate_client, translate_text, translate_to_chinese
+from discopilot.ai.google_translate import create_translate_client, translate_text, translate_to_chinese
 
 
 class C3PO:
