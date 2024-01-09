@@ -1,13 +1,14 @@
 from discopilot.bot.news import NewsBot
 from discopilot.configuration_loader import ConfigurationLoader
 from discopilot.utils import get_twitter_creds, get_google_translate_details, get_discord_details
+from discopilot.ai.hedwig import Hedwig
 
 
-def hedwig(config_file, version = "production"):
+def hedwig(config_file, version="production"):
     # Initialize bots
-    hedwig_bot  = Hedwig(config_file)
+    hedwig_bot = Hedwig(config_file)
     # Run the bots
-    hedwig_bot.fly(version = version)
+    hedwig_bot.fly(version=version)
 
 if __name__ == '__main__':
     import sys
