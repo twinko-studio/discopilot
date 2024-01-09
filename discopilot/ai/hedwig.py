@@ -7,6 +7,9 @@ import tweepy
 from discopilot.channel_mapper import ChannelMapper
 from discopilot.ai.c3po import c3po
 
+from discopilot.configuration_loader import ConfigurationLoader
+from utils import get_twitter_creds, get_google_translate_details, get_discord_details, create_discord_client
+
 import os
 import random
 import asyncio

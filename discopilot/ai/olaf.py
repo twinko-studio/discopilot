@@ -1,9 +1,8 @@
 from discopilot.configuration_loader import ConfigurationLoader
-
 from discopilot.utils import get_discord_details, get_twitter_creds, get_settings
-
-
-from datetime import datetime
+from datetime import datetimef
+from discopilot.ai.discord import DiscordBot
+from discopilot.ai.twitter import TwitterBot
 
 
 

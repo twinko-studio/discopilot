@@ -1,6 +1,6 @@
 from discopilot.utils import hf_text_post, read_content_from_file, get_summary_from_response
 import os
-#from transformers import pipeline
+from transformers import pipeline
 
 class Espresso:
     def __init__(self, model_id, **kwargs):
@@ -31,7 +31,7 @@ class HuggingFaceEspresso(Espresso):
 
 
         elif env == "local":
-            prnit("using local model")
+            print("using local model")
             summarizer = pipeline("summarization", model=self.model_id)
             return summarizer(text, max_length=max_length, min_length=min_length, do_sample=do_sample, **kwargs)
         else:

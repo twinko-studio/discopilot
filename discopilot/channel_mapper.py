@@ -1,3 +1,6 @@
+from discopilot.configuration_loader import ConfigurationLoader
+from discopilot.utils import get_discord_details
+
 class ChannelMapper:
     """
     Maps channel names to target filterd channel and target Chinese channel.

@@ -1,9 +1,8 @@
 import os
 from datetime import datetime, timedelta
 from discopilot.ai.summarizer import summarize
-import argparse
 
-import discord
+from discord import 
 from discopilot.configuration_loader import ConfigurationLoader
 from discopilot.channel_mapper import ChannelMapper
 from discopilot.utils import get_discord_details
@@ -31,7 +30,7 @@ def format_msg_embed(msg):
 
 
 
-async def fetch_messages(channel_id, start_time=None, end_time=None, hours=None):
+async def fetch_messages(discord_client, channel_id, start_time=None, end_time=None, hours=None):
     if channel_id is None:
         print("No channel ID specified!")
         return
