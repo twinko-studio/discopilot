@@ -1,8 +1,6 @@
 import os
 from datetime import datetime, timedelta
 from discopilot.ai.summarizer import summarize
-
-from discord import 
 from discopilot.configuration_loader import ConfigurationLoader
 from discopilot.channel_mapper import ChannelMapper
 from discopilot.utils import get_discord_details
