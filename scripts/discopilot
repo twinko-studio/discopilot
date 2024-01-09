@@ -66,9 +66,13 @@ def main():
     ## twitter post
     discopilot twitter --post 'Hello, World!'
 
-    ## discord post
+    ## TODO: discord post 
     discopilot discord --post 'Hello, World!' --channel_id 1234567890
 
+    ## TODO: hedwig subcommand: the news bot
+
+    ## TODO: olaf subcommand: the social media bot
+    
     
 
     '''

@@ -9,12 +9,16 @@ class DiscordBot:
     
     Example usage:
     import os
+    import asyncio
     config_file_path = os.getenv("DISCOPILOT_CONFIG")
     discord_bot = DiscordBot(config_file_path, version = 'dev')
-    discord_bot$post("Hello, world!")
-    discord_bot$post("Hello, world!", channel_id = 1234567890)
-    discord_bot$fetch(hours = 24)
-    discord_bot$fetch(start_time = datetime(2021, 1, 1), end_time = datetime(2021, 1, 2))
+    asyncio.run(discord_bot.post("Hello, world!")) # default channel_id need to be set in config file
+    asyncio.run(discord_bot.post("Hello, world!", channel_id = 1234567890) # try a different channel_id
+    asyncio.run(discord_bot.fetch(hours = 24))
+    asyncio.run(discord_bot.fetch(start_time = datetime(2023, 9, 1), end_time = datetime(2023, 9, 2)))
+    asyncio.run(discord_bot.fetch(channel_id = 1234567890, hours = 24))
+    asyncio.run(discord_bot.fetch(channel_id = 1234567890, start_time = datetime(2021, 1, 1), end_time = datetime(2021, 1, 2)))
+
     """
     def __init__(self, config_file, message_content = True, reactions = True, version = 'production'):
         # Initialization code, e.g., authentication
@@ -72,7 +76,7 @@ class DiscordBot:
             return
         return messages
     
-    def post(self, message, channel_id):
+    async def post(self, message, channel_id=None):
         # Code to post a message to Discord
         if channel_id is None:
             if self.monitor_cid:
@@ -80,8 +84,23 @@ class DiscordBot:
             else:
                 print("No channel ID specified!")
                 return
+        print("start posting to channel", channel_id)
         channel = await self.discord_client.fetch_channel(channel_id)
+        # channel = discord.utils.get(self.discord_client.get_all_channels(), id=channel_id)
+        if channel is None:
+            print("Channel not found!")
+            return
         await channel.send(message)
+
+    async def start(self):
+        """Start the Discord bot."""
+        self.discord_client = self.create_client()
+        await self.discord_client.start()
+
+    async def stop(self):
+        """Stop the Discord bot."""
+        await self.discord_client.close()
+        self.discord_client = None
 
     def create_client(self, message_content = True, reactions = True):
         """Initialize the Discord bot."""

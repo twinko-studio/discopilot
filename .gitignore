@@ -1,4 +1,6 @@
 .vscode
+.github
+.empty
 __pycache__/
 discopilot.egg-info/
 .env
